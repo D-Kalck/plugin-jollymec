@@ -1,0 +1,13 @@
+{
+    "id": "jollymec",
+    "name": "Jolly Mec",
+    "description": "Plugin permettant de contrôler son poêle Jolly Mec",
+    "licence": "AGPL",
+    "author": "D-Kalck",
+    "require": "3.3",
+    "category": "wellness",
+    "changelog": "",
+    "documentation": "",
+    "language": "fr",
+    "compatibility": ""
+}

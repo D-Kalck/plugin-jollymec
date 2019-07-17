@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<info>
+    <id>jollymec</id>
+    <name>Jolly Mec</name>
+    <description>Plugin permettant de contrôler son poêle Jolly Mec</description>
+    <icon>jollymec_icon</icon>
+    <licence>AGPL</licence>
+    <author>D-Kalck</author>
+    <installation>Aucune</installation>
+    <require>3.300</require>
+    <version>0.10</version>
+    <category>Confort</category>
+</info>
