@@ -67,7 +67,6 @@ class jollymec extends eqLogic {
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         $response = curl_exec($ch);
         $info = curl_getinfo($ch);
-        log::add('jollymec', 'debug', __(print_r($info, true), __FILE__));
         curl_close($ch);
         log::add('jollymec', 'debug', __('Etape 2 : Connexion à Efesto', __FILE__));
         $ch = curl_init();
@@ -91,14 +90,12 @@ class jollymec extends eqLogic {
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         $response = curl_exec($ch);
         $info = curl_getinfo($ch);
-        log::add('jollymec', 'debug', __(print_r($info, true), __FILE__));
         curl_close($ch);
         return $response;
     }
 
     public static function efesto_get_heaters() {
         $content = self::efesto_connect();
-        log::add('jollymec', 'debug', $content);
         $doc = new DOMDocument();
         @$doc->loadHTML($content);
         $xpath = new DOMXPath($doc);
@@ -121,6 +118,7 @@ class jollymec extends eqLogic {
     }
 
     public static function efesto_ajax($method, $params, $mac_address) {
+        log::add('jollymec', 'debug', __("AJAX avec méthode : ".$method, __FILE__));
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, self::AJAX_URL);
         curl_setopt($ch, CURLOPT_COOKIEJAR, jeedom::getTmpFolder('jollymec').'/cookies.txt');
