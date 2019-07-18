@@ -374,8 +374,8 @@ class jollymec extends eqLogic {
     public function postRemove() {
     }
 
-    public function toHtml($_version = 'dashboard') {
-    }
+    /*public function toHtml($_version = 'dashboard') {
+    }*/
 
     public function updateHeaterData() {
 
