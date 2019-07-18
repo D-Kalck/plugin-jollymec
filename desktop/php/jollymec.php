@@ -107,6 +107,18 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     </fieldset>
                 </form>
             </div>
+            <div role="tabpanel" class="tab-pane" id="commandtab">
+                <table id="table_cmd" class="table table-bordered table-condensed">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
