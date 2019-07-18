@@ -4,10 +4,11 @@
     "description": "Plugin permettant de contrôler son poêle Jolly Mec",
     "licence": "AGPL",
     "author": "D-Kalck",
+    "version": 0.1,
     "require": "3.3",
     "category": "wellness",
     "changelog": "",
     "documentation": "",
     "language": "fr",
-    "compatibility": ""
+    "compatibility": "",
 }
