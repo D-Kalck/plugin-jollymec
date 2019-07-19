@@ -1,4 +1,5 @@
 # 19/07/2019
+- Vérification des données reçues de la commande get-state.
 - Correction d'un bug lors de la mise à jour des commandes infos.
 - Correction de la doc.
 - Premier essai pour la mise à jour des commandes infos.

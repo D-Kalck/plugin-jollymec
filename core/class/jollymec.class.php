@@ -374,6 +374,8 @@ class jollymec extends eqLogic {
         $setPower->setConfiguration('minValue', 0);
         $setPower->setConfiguration('maxValue', 5);
         $setPower->save();
+
+        // FIXME : Rajouter les commandes infos pour la température des fumées (smokeTemperature), la température ambiante (airTemperature) et la puissance réelle (realPower)
     }
 
     public function preUpdate() {
@@ -407,21 +409,33 @@ class jollymecCmd extends cmd {
             case 'refresh':
                 //$eqLogic->updateHeaterData();
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
-                $eqLogic->checkAndUpdateCmd('status', $message->deviceStatus);
-                $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
-                $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
+                if (isset($message->deviceStatus)) {
+                    $eqLogic->checkAndUpdateCmd('status', $message->deviceStatus);
+                }
+                if (isset($message->lastSetAirTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
+                }
+                if (isset($message->lastSetPower)) {
+                    $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
+                }
                 break;
             case 'status':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
-                $eqLogic->checkAndUpdateCmd('status', $message->deviceStatus);
+                if (isset($message->deviceStatus)) {
+                    $eqLogic->checkAndUpdateCmd('status', $message->deviceStatus);
+                }
                 break;
             case 'order':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
-                $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
+                if (isset($message->lastSetAirTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
+                }
                 break;
             case 'power':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
-                $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
+                if (isset($message->lastSetPower)) {
+                    $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
+                }
                 break;
             case 'on':
                 jollymec::efesto_heater_on($eqLogic->getLogicalId());
