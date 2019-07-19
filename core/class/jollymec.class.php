@@ -147,11 +147,11 @@ class jollymec extends eqLogic {
             'Referer: '.str_replace('{MAC_ADDRESS}', strtoupper($mac_address), self::MANAGE_URL),
             'Connection: keep-alive',
         ));
-        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        //curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         $response = curl_exec($ch);
         log::add('jollymec', 'debug', __(print_r($response, true), __FILE__));
         $info = curl_getinfo($ch);
-        log::add('jollymec', 'debug', __(print_r($info, true), __FILE__));
+        //log::add('jollymec', 'debug', __(print_r($info, true), __FILE__));
         curl_close($ch);
         return $response;
     }
