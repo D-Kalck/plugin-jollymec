@@ -1,4 +1,8 @@
 # 19/07/2019
+- Correction de la doc.
+- Premier essai pour la mise à jour des commandes infos.
+- Ajout du nom des paramètres.
+- Logs moins sauvages.
 - Mise en place des liens vers la doc et le changelog.
 - Mise en place du cron5 et d'une fonction refresh qui marche.
 - Arborescence de la doc.
@@ -16,7 +20,7 @@
 - Correction du fichier JSON invalide.
 - Ajout de la version du plugin.
 - Désactivation de la méthode toHtml.
-- Ajout d'une colonne pour l'historique et l'affichage dans l'onglet commandes
+- Ajout d'une colonne pour l'historique et l'affichage dans l'onglet commandes.
 - Ajout de l'onglet commandes.
 
 # 17/07/2019
