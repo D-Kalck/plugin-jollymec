@@ -407,21 +407,21 @@ class jollymecCmd extends cmd {
             case 'refresh':
                 //$eqLogic->updateHeaterData();
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
-                $eqLogic->checkAndUpdate('status', $message->deviceStatus);
-                $eqLogic->checkAndUpdate('order', $message->lastSetAirTemperature);
-                $eqLogic->checkAndUpdate('power', $message->lastSetPower);
+                $eqLogic->checkAndUpdateCmd('status', $message->deviceStatus);
+                $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
+                $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
                 break;
             case 'status':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
-                $eqLogic->checkAndUpdate('status', $message->deviceStatus);
+                $eqLogic->checkAndUpdateCmd('status', $message->deviceStatus);
                 break;
             case 'order':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
-                $eqLogic->checkAndUpdate('order', $message->lastSetAirTemperature);
+                $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
                 break;
             case 'power':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
-                $eqLogic->checkAndUpdate('power', $message->lastSetPower);
+                $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
                 break;
             case 'on':
                 jollymec::efesto_heater_on($eqLogic->getLogicalId());
