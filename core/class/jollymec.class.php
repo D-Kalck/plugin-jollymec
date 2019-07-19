@@ -396,8 +396,14 @@ class jollymecCmd extends cmd {
             case 'refresh':
                 $eqLogic->updateHeaterData();
             case 'status':
+                jollymec::efesto_get_state($eqLogic->getLogicalId());
+                break;
             case 'order':
+                jollymec::efesto_get_state($eqLogic->getLogicalId());
+                break;
             case 'power':
+                jollymec::efesto_get_state($eqLogic->getLogicalId());
+                break;
             case 'on':
                 jollymec::efesto_heater_on($eqLogic->getLogicalId());
                 break;
