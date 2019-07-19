@@ -7,8 +7,8 @@
     "version": 0.1,
     "require": "3.3",
     "category": "wellness",
-    "changelog": "",
-    "documentation": "",
+    "changelog": "https://d-kalck.github.io/plugin-jollymec/#language#/changelog",
+    "documentation": "https://d-kalck.github.io/plugin-jollymec/#language#/",
     "language": "fr",
     "compatibility": ""
 }
