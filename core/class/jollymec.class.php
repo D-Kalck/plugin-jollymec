@@ -41,6 +41,15 @@ class jollymec extends eqLogic {
     /*     * ***********************Methode static*************************** */
 
     public static function cron5() {
+        foreach (self::byType('jollymec') as $jollymec) {//parcours tous les équipements du plugin vdm
+            if ($jollymec->getIsEnable() == 1) {//vérifie que l'équipement est actif
+                $cmd = $jollymec->getCmd(null, 'refresh');//retourne la commande "refresh si elle existe
+                if (!is_object($cmd)) {//Si la commande n'existe pas
+                    continue; //continue la boucle
+                }
+                $cmd->execCmd(); // la commande existe on la lance
+            }
+        }
     }
 
     public static function cronDaily() {
@@ -394,7 +403,9 @@ class jollymecCmd extends cmd {
         $eqLogic = $this->getEqLogic();
         switch ($this->getLogicalId()) {
             case 'refresh':
-                $eqLogic->updateHeaterData();
+                //$eqLogic->updateHeaterData();
+                jollymec::efesto_get_state($eqLogic->getLogicalId());
+                break;
             case 'status':
                 jollymec::efesto_get_state($eqLogic->getLogicalId());
                 break;
