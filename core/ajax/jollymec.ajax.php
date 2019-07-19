@@ -27,17 +27,11 @@ try {
     ajax::init();
 
     if (init('action') == 'sync') {
-        if (!isConnect('admin')) {
-                throw new Exception(__('401 - Accès non autorisé', __FILE__));
-        }
         jollymec::syncHeaters();
         ajax::success();
     }
 
     if (init('action') == 'logout') {
-        if (!isConnect('admin')) {
-                throw new Exception(__('401 - Accès non autorisé', __FILE__));
-        }
         jollymec::efesto_logout();
         ajax::success();
     }
