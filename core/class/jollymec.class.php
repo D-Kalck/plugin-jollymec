@@ -102,7 +102,7 @@ class jollymec extends eqLogic {
         $mac_query = '//ul[@class="registered-heaters"]//div[@class="row"]//div[contains(@class,"heater-type")]//text()';
         $name_query = '//ul[@class="registered-heaters"]//div[@class="row"]//div[contains(@class,"heater-name")]//text()';
         $mac_addresses = $xpath->query($mac_query);
-        log::add('jollymec', 'debug', print_r($mac_addresses, true));
+        log::add('jollymec', 'debug', trim($mac_addresses));
         $names = $xpath->query($name_query);
         if ($mac_addresses->length > 0 && $names->length > 0) {
             $ret = array();
@@ -220,6 +220,7 @@ class jollymec extends eqLogic {
                 $eqLogic->setIsVisible(1);
                 $eqLogic->save();
                 $added = true;
+                log::add('jollymec', 'error', 'Poêle '.$mac_address.' ajouté');
             }
         }
         if (!$added) {
@@ -266,13 +267,13 @@ class jollymec extends eqLogic {
         if (!is_object($order)) {
             $order = new jollymecCmd();
             $order->setName(__('Consigne', __FILE__));
+            $order->setGeneric_type('THERMOSTAT_SETPOINT');
             $order->setUnite('°C');
         }
         $order->setLogicalId('order');
         $order->setEqLogic_id($this->getId());
         $order->setType('info');
         $order->setSubType('numeric');
-        $order->setGeneric_type('THERMOSTAT_SETPOINT');
         $order->setConfiguration('minValue', 7);
         $order->setConfiguration('maxValue', 40);
         $order->save();
@@ -332,14 +333,16 @@ class jollymec extends eqLogic {
         if (!is_object($thermostat)) {
             $thermostat = new jollymecCmd();
             $thermostat->setName(__('Thermostat', __FILE__));
-            $order->setUnite('°C');
+            $thermostat->setTemplate('dashboard', 'button');
+            $thermostat->setTemplate('mobile', 'button');
+            $thermostat->setGeneric_type('THERMOSTAT_SET_SETPOINT');
+            $thermostat->setUnite('°C');
         }
         $thermostat->setEqLogic_id($this->getId());
         $thermostat->setLogicalId('thermostat');
         $thermostat->setType('action');
         $thermostat->setSubType('slider');
         $thermostat->setValue($order->getId());
-        $thermostat->setGeneric_type('THERMOSTAT_SET_SETPOINT');
         $thermostat->setConfiguration('minValue', 7);
         $thermostat->setConfiguration('maxValue', 40);
         $thermostat->save();
@@ -349,6 +352,8 @@ class jollymec extends eqLogic {
         if (!is_object($setPower)) {
             $setPower = new jollymecCmd();
             $setPower->setName(__('Réglage Puissance', __FILE__));
+            $setPower->setTemplate('dashboard', 'button');
+            $setPower->setTemplate('mobile', 'button');
         }
         $setPower->setEqLogic_id($this->getId());
         $setPower->setLogicalId('setPower');
