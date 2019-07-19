@@ -134,7 +134,7 @@ class jollymec extends eqLogic {
         curl_setopt($ch, CURLOPT_COOKIEFILE, jeedom::getTmpFolder('jollymec').'/cookies.txt');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_POST, true);
         $postfields = array(
             'method' => $method,
@@ -149,11 +149,13 @@ class jollymec extends eqLogic {
         ));
         //curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         $response = curl_exec($ch);
-        log::add('jollymec', 'debug', __(print_r($response, true), __FILE__));
+        $response = json_decode($response);
+        $message = $response->message;
+        log::add('jollymec', 'debug', __(print_r($message, true), __FILE__));
         $info = curl_getinfo($ch);
         //log::add('jollymec', 'debug', __(print_r($info, true), __FILE__));
         curl_close($ch);
-        return $response;
+        return $message;
     }
 
     public static function efesto_get_state($mac_address) {
@@ -404,16 +406,22 @@ class jollymecCmd extends cmd {
         switch ($this->getLogicalId()) {
             case 'refresh':
                 //$eqLogic->updateHeaterData();
-                jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $eqLogic->checkAndUpdate('status', $message->deviceStatus);
+                $eqLogic->checkAndUpdate('order', $message->lastSetAirTemperature);
+                $eqLogic->checkAndUpdate('power', $message->lastSetPower);
                 break;
             case 'status':
-                jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $eqLogic->checkAndUpdate('status', $message->deviceStatus);
                 break;
             case 'order':
-                jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $eqLogic->checkAndUpdate('order', $message->lastSetAirTemperature);
                 break;
             case 'power':
-                jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $eqLogic->checkAndUpdate('power', $message->lastSetPower);
                 break;
             case 'on':
                 jollymec::efesto_heater_on($eqLogic->getLogicalId());
@@ -423,13 +431,13 @@ class jollymecCmd extends cmd {
                 break;
             case 'setOrder':
                 if (!isset($_options['slider']) || $_options['slider'] == '' || !is_numeric(intval($_options['slider']))) {
-                        return;
+                    return;
                 }
                 jollymec::efesto_order(intval($_options['slider']), $eqLogic->getLogicalId());
                 break;
             case 'setPower':
                 if (!isset($_options['slider']) || $_options['slider'] == '' || !is_numeric(intval($_options['slider']))) {
-                        return;
+                    return;
                 }
                 jollymec::efesto_power(intval($_options['slider']), $eqLogic->getLogicalId());
                 break;
