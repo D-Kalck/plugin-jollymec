@@ -52,8 +52,8 @@ class jollymec extends eqLogic {
         }
     }
 
-    public static function cronDaily() {
-    }
+    /*public static function cronDaily() {
+    }*/
 
     public static function efesto_logout() {
         if (!file_exists(jeedom::getTmpFolder('jollymec').'/cookies.txt')) {
@@ -62,7 +62,7 @@ class jollymec extends eqLogic {
         unlink(jeedom::getTmpFolder('jollymec').'/cookies.txt');
     }
 
-    public static function efesto_connect() {
+    public static function efesto_connect($connect_only = true) {
         self::efesto_logout();
         $data = array();
         log::add('jollymec', 'debug', __('Etape 1 : Connexion à Efesto', __FILE__));
@@ -74,8 +74,8 @@ class jollymec extends eqLogic {
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-        $response = curl_exec($ch);
-        $info = curl_getinfo($ch);
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_exec($ch);
         curl_close($ch);
         log::add('jollymec', 'debug', __('Etape 2 : Connexion à Efesto', __FILE__));
         $ch = curl_init();
@@ -86,6 +86,7 @@ class jollymec extends eqLogic {
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_NOBODY, $connect_only);
         $postfields = array(
             'login[username]' => config::byKey('email', 'jollymec'),
             'login[password]=' => config::byKey('password', 'jollymec')
@@ -104,7 +105,7 @@ class jollymec extends eqLogic {
     }
 
     public static function efesto_get_heaters() {
-        $content = self::efesto_connect();
+        $content = self::efesto_connect(false);
         $doc = new DOMDocument();
         @$doc->loadHTML($content);
         $xpath = new DOMXPath($doc);
@@ -127,6 +128,7 @@ class jollymec extends eqLogic {
     }
 
     public static function efesto_ajax($method, $params, $mac_address) {
+        self::efesto_connect(true);
         log::add('jollymec', 'debug', __("AJAX avec méthode : ".$method, __FILE__));
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, self::AJAX_URL);
@@ -147,13 +149,13 @@ class jollymec extends eqLogic {
             'Referer: '.str_replace('{MAC_ADDRESS}', strtoupper($mac_address), self::MANAGE_URL),
             'Connection: keep-alive',
         ));
-        //curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         $response = curl_exec($ch);
+        /*if ($method == 'get-state') {
+            $response = '{"status":0,"message":{"contactStatus":0,"deviceStatus":0,"airTemperature":26,"smokeTemperature":30,"waterTemperature":255,"lastSetAirTemperature":15,"lastSetPower":1,"lastSetWaterTemperature":255,"chronoEnabled":0,"hasRemoteRoomProbe":255,"realPower":5,"canGetMainVent":0,"canSetMainVent":0,"mainVentValue":0,"mainVentMin":0,"mainVentMax":255,"mainVentAutoValue":255,"mainVentOffValue":255,"canGetSxCanalization":0,"canSetSxCanalization":0,"sxCanalizationValue":0,"sxCanalizationMin":0,"sxCanalizationMax":255,"sxCanalizationAutoValue":255,"sxCanalizationOffValue":255,"canGetDxCanalization":0,"canSetDxCanalization":0,"dxCanalizationValue":40,"dxCanalizationMin":0,"dxCanalizationMax":255,"dxCanalizationAutoValue":255,"dxCanalizationOffValue":255,"canGetWaterTemperature":0,"canSetWaterTemperature":0,"isDeviceInAlarm":0,"pufferWaterTemperature":255,"boilerWaterTemperature":255,"kProbeH":255,"kProbeL":255,"kProbe":65535,"computedAirTemperature":26},"method":"get-state","idle":null}';
+        }*/
         $response = json_decode($response);
         $message = $response->message;
         log::add('jollymec', 'debug', __(print_r($message, true), __FILE__));
-        $info = curl_getinfo($ch);
-        //log::add('jollymec', 'debug', __(print_r($info, true), __FILE__));
         curl_close($ch);
         return $message;
     }
@@ -193,8 +195,8 @@ class jollymec extends eqLogic {
             ));
             return false;
         }
-        $jollymec = jollymec::byLogicalId($_def['macaddress'], 'jollymec');
-        if (!is_object($jollymec)) {
+        $eqLogic = jollymec::byLogicalId($_def['macaddress'], 'jollymec');
+        if (!is_object($eqLogic)) {
             $eqLogic = new jollymec();
             $eqLogic->setName($_def['friendlyname']);
         }
@@ -375,6 +377,45 @@ class jollymec extends eqLogic {
         $setPower->setConfiguration('maxValue', 5);
         $setPower->save();
 
+        // Température
+        $airTemp = $this->getCmd(null, 'airTemp');
+        if (!is_object($airTemp)) {
+            $airTemp = new jollymecCmd();
+            $airTemp->setName(__('Température', __FILE__));
+            $airTemp->setGeneric_type('TEMPERATURE');
+            $airTemp->setUnite('°C');
+        }
+        $airTemp->setEqLogic_id($this->getId());
+        $airTemp->setLogicalId('airTemp');
+        $airTemp->setType('info');
+        $airTemp->setSubType('numeric');
+        $airTemp->save();
+
+        // Température de la fumée
+        $smokeTemp = $this->getCmd(null, 'smokeTemp');
+        if (!is_object($smokeTemp)) {
+            $smokeTemp = new jollymecCmd();
+            $smokeTemp->setName(__('Température des fumées', __FILE__));
+            $smokeTemp->setUnite('°C');
+        }
+        $smokeTemp->setEqLogic_id($this->getId());
+        $smokeTemp->setLogicalId('smokeTemp');
+        $smokeTemp->setType('info');
+        $smokeTemp->setSubType('numeric');
+        $smokeTemp->save();
+
+        // Puissance réelle
+        $realPower = $this->getCmd(null, 'realPower');
+        if (!is_object($realPower)) {
+            $realPower = new jollymecCmd();
+            $realPower->setName(__('Puissance réelle', __FILE__));
+        }
+        $realPower->setEqLogic_id($this->getId());
+        $realPower->setLogicalId('realPower');
+        $realPower->setType('info');
+        $realPower->setSubType('numeric');
+        $realPower->save();
+
         // FIXME : Rajouter les commandes infos pour la température des fumées (smokeTemperature), la température ambiante (airTemperature) et la puissance réelle (realPower)
     }
 
@@ -418,6 +459,15 @@ class jollymecCmd extends cmd {
                 if (isset($message->lastSetPower)) {
                     $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
                 }
+                if (isset($message->airTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('airTemp', $message->airTemperature);
+                }
+                if (isset($message->smokeTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('smokeTemp', $message->smokeTemperature);
+                }
+                if (isset($message->realPower)) {
+                    $eqLogic->checkAndUpdateCmd('realPower', $message->realPower);
+                }
                 break;
             case 'status':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
@@ -437,23 +487,61 @@ class jollymecCmd extends cmd {
                     $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
                 }
                 break;
+            case 'airTemp':
+                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                if (isset($message->airTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('airTemp', $message->airTemperature);
+                }
+                break;
+            case 'smokeTemp':
+                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                if (isset($message->smokeTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('smokeTemp', $message->smokeTemperature);
+                }
+                break;
+            case 'realPower':
+                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                if (isset($message->realPower)) {
+                    $eqLogic->checkAndUpdateCmd('realPower', $message->realPower);
+                }
+                break;
             case 'on':
                 jollymec::efesto_heater_on($eqLogic->getLogicalId());
+                $cmd = $eqLogic->getCmd(null, 'refresh');
+                if (!is_object($cmd)) {
+                    return;
+                }
+                $cmd->execCmd();
                 break;
             case 'off':
                 jollymec::efesto_heater_off($eqLogic->getLogicalId());
+                $cmd = $eqLogic->getCmd(null, 'refresh');
+                if (!is_object($cmd)) {
+                    return;
+                }
+                $cmd->execCmd();
                 break;
             case 'setOrder':
                 if (!isset($_options['slider']) || $_options['slider'] == '' || !is_numeric(intval($_options['slider']))) {
                     return;
                 }
                 jollymec::efesto_order(intval($_options['slider']), $eqLogic->getLogicalId());
+                $cmd = $eqLogic->getCmd(null, 'refresh');
+                if (!is_object($cmd)) {
+                    return;
+                }
+                $cmd->execCmd();
                 break;
             case 'setPower':
                 if (!isset($_options['slider']) || $_options['slider'] == '' || !is_numeric(intval($_options['slider']))) {
                     return;
                 }
                 jollymec::efesto_power(intval($_options['slider']), $eqLogic->getLogicalId());
+                $cmd = $eqLogic->getCmd(null, 'refresh');
+                if (!is_object($cmd)) {
+                    return;
+                }
+                $cmd->execCmd();
                 break;
         }
     }

@@ -1,3 +1,6 @@
+# 20/07/2019
+- Ajout de nouvelles infos et mise à jour des infos lors des actions.
+
 # 19/07/2019
 - Vérification des données reçues de la commande get-state.
 - Correction d'un bug lors de la mise à jour des commandes infos.
