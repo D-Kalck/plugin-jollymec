@@ -269,6 +269,7 @@ class jollymec extends eqLogic {
         if (!is_object($status)) {
             $status = new jollymecCmd();
             $status->setName(__('Etat', __FILE__));
+            $status->setGeneric_type('HEATING_STATE');
         }
         $status->setLogicalId('status');
         $status->setEqLogic_id($this->getId());
@@ -297,6 +298,7 @@ class jollymec extends eqLogic {
         if (!is_object($power)) {
             $power = new jollymecCmd();
             $power->setName(__('Puissance', __FILE__));
+            $power->setGeneric_type('HEATING_OTHER');
         }
         $power->setLogicalId('power');
         $power->setEqLogic_id($this->getId());
@@ -323,6 +325,7 @@ class jollymec extends eqLogic {
         if (!is_object($on)) {
             $on = new jollymecCmd();
             $on->setName(__('On', __FILE__));
+            $on->setGeneric_type('HEATING_ON');
         }
         $on->setEqLogic_id($this->getId());
         $on->setLogicalId('on');
@@ -335,6 +338,7 @@ class jollymec extends eqLogic {
         if (!is_object($off)) {
             $off = new jollymecCmd();
             $off->setName(__('Off', __FILE__));
+            $off->setGeneric_type('HEATING_OFF');
         }
         $off->setEqLogic_id($this->getId());
         $off->setLogicalId('off');
