@@ -522,7 +522,7 @@ class jollymecCmd extends cmd {
                 }
                 $cmd->execCmd();
                 break;
-            case 'setOrder':
+            case 'thermostat':
                 if (!isset($_options['slider']) || $_options['slider'] == '' || !is_numeric(intval($_options['slider']))) {
                     return;
                 }

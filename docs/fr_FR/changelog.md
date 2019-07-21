@@ -1,4 +1,5 @@
-# 20/07/2019
+# 21/07/2019
+- Correction d'un bug sur le réglage du thermostat.
 - Plus de logs en debug.
 
 # 20/07/2019
