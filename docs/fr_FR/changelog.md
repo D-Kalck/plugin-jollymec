@@ -1,4 +1,7 @@
 # 20/07/2019
+- Plus de logs en debug.
+
+# 20/07/2019
 - Ajout de nouvelles infos et mise à jour des infos lors des actions.
 
 # 19/07/2019
