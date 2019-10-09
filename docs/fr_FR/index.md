@@ -5,6 +5,7 @@ Plugin permettant de piloter ses poêles Jolly Mec.
 Pré-requis 
 ----------
 Avoir configuré son poêle Jolly Mec pour qu'il soit accessible à distance depuis la page [http://jollymec.efesto.web2app.it/fr/](http://jollymec.efesto.web2app.it/fr/).
+https://www.youtube.com/watch?v=GvePqnQn5uM
 
 Configuration 
 ===

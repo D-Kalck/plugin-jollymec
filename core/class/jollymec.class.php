@@ -89,7 +89,7 @@ class jollymec extends eqLogic {
         curl_setopt($ch, CURLOPT_NOBODY, $connect_only);
         $postfields = array(
             'login[username]' => config::byKey('email', 'jollymec'),
-            'login[password]=' => config::byKey('password', 'jollymec')
+            'login[password]' => config::byKey('password', 'jollymec')
         );
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -268,7 +268,7 @@ class jollymec extends eqLogic {
         $status = $this->getCmd(null, 'status');
         if (!is_object($status)) {
             $status = new jollymecCmd();
-            $status->setName(__('Etat', __FILE__));
+            $status->setName(__('Statut', __FILE__));
             $status->setGeneric_type('HEATING_STATE');
         }
         $status->setLogicalId('status');
@@ -282,8 +282,10 @@ class jollymec extends eqLogic {
         if (!is_object($order)) {
             $order = new jollymecCmd();
             $order->setName(__('Consigne', __FILE__));
-            $order->setGeneric_type('THERMOSTAT_SETPOINT');
+            $order->setTemplate('dashboard', 'badge');
+            $order->setTemplate('mobile', 'badge');
             $order->setUnite('°C');
+            $order->setIsVisible(false);
         }
         $order->setLogicalId('order');
         $order->setEqLogic_id($this->getId());
@@ -298,7 +300,9 @@ class jollymec extends eqLogic {
         if (!is_object($power)) {
             $power = new jollymecCmd();
             $power->setName(__('Puissance', __FILE__));
-            $power->setGeneric_type('HEATING_OTHER');
+            $power->setTemplate('dashboard', 'badge');
+            $power->setTemplate('mobile', 'badge');
+            $power->setIsVisible(false);
         }
         $power->setLogicalId('power');
         $power->setEqLogic_id($this->getId());
@@ -353,7 +357,7 @@ class jollymec extends eqLogic {
             $thermostat->setName(__('Thermostat', __FILE__));
             $thermostat->setTemplate('dashboard', 'button');
             $thermostat->setTemplate('mobile', 'button');
-            $thermostat->setGeneric_type('THERMOSTAT_SET_SETPOINT');
+            $thermostat->setGeneric_type('GENERIC_ACTION');
             $thermostat->setUnite('°C');
         }
         $thermostat->setEqLogic_id($this->getId());
@@ -372,6 +376,7 @@ class jollymec extends eqLogic {
             $setPower->setName(__('Réglage Puissance', __FILE__));
             $setPower->setTemplate('dashboard', 'button');
             $setPower->setTemplate('mobile', 'button');
+            $setPower->setGeneric_type('GENERIC_ACTION');
         }
         $setPower->setEqLogic_id($this->getId());
         $setPower->setLogicalId('setPower');
@@ -388,6 +393,8 @@ class jollymec extends eqLogic {
             $airTemp = new jollymecCmd();
             $airTemp->setName(__('Température', __FILE__));
             $airTemp->setGeneric_type('TEMPERATURE');
+            $airTemp->setTemplate('dashboard', 'badge');
+            $airTemp->setTemplate('mobile', 'badge');
             $airTemp->setUnite('°C');
         }
         $airTemp->setEqLogic_id($this->getId());
@@ -400,7 +407,9 @@ class jollymec extends eqLogic {
         $smokeTemp = $this->getCmd(null, 'smokeTemp');
         if (!is_object($smokeTemp)) {
             $smokeTemp = new jollymecCmd();
-            $smokeTemp->setName(__('Température des fumées', __FILE__));
+            $smokeTemp->setName(__('Fumées', __FILE__));
+            $smokeTemp->setTemplate('dashboard', 'line');
+            $smokeTemp->setTemplate('mobile', 'line');
             $smokeTemp->setUnite('°C');
         }
         $smokeTemp->setEqLogic_id($this->getId());
@@ -414,14 +423,14 @@ class jollymec extends eqLogic {
         if (!is_object($realPower)) {
             $realPower = new jollymecCmd();
             $realPower->setName(__('Puissance réelle', __FILE__));
+            $realPower->setTemplate('dashboard', 'line');
+            $realPower->setTemplate('mobile', 'line');
         }
         $realPower->setEqLogic_id($this->getId());
         $realPower->setLogicalId('realPower');
         $realPower->setType('info');
         $realPower->setSubType('numeric');
         $realPower->save();
-
-        // FIXME : Rajouter les commandes infos pour la température des fumées (smokeTemperature), la température ambiante (airTemperature) et la puissance réelle (realPower)
     }
 
     public function preUpdate() {
@@ -551,44 +560,3 @@ class jollymecCmd extends cmd {
         }
     }
 }
-
-/*
-it.omniaweb.methods.getDataToggleInfo = function( toggle, update )
-{
-	var
-		  parent = toggle.parent()
-		, target = parent.find('.current-value')
-		, currentValue = parseInt( target.attr('data-current'), 10 )
-		, max = parent.attr( 'data-max' )
-		, min = parent.attr( 'data-min' )
-		, newValue = update ? it.omniaweb.forceBetween( currentValue += toggle.attr( 'data-todo' ) === 'up' ? 1 : -1, min, max ) : currentValue
-	;
-
-	return {
-		  parent: parent
-		, method: parent.attr( 'data-method' )
-		, currentValue: currentValue
-		, newValue: newValue
-		, target: target
-		, hidden: jQ( '.store-hidden-value', parent )
-	};
-};
-set-power =>
-
-Actions
-envoi vers l'url AJAX :
-method (heater-off, heater-on)
-params (1)
-device (adresse mac)
-
-Actions
-envoi vers l'url AJAX :
-method (write-parameters-queue)
-params (set-power=newValue|set-air-temperature=newValue)
-device (adresse mac)
-
-Infos
-envoi vers l'url AJAX :
-method (get-state)
-params (1)
-device (adresse mac)

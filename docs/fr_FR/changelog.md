@@ -1,3 +1,6 @@
+# 09/10/2019
+- Ajustements sur les types génériques et l'affichage.
+
 # 21/07/2019
 - Correction d'un bug sur le réglage du thermostat.
 - Plus de logs en debug.
