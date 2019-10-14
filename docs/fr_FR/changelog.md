@@ -1,3 +1,6 @@
+# 14/10/2019
+- Correction d'un bug lors de l'enregistrement d'un équipement.
+
 # 09/10/2019
 - Ajustements sur les types génériques et l'affichage.
 

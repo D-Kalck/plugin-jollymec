@@ -155,10 +155,15 @@ class jollymec extends eqLogic {
             $response = '{"status":0,"message":{"contactStatus":0,"deviceStatus":0,"airTemperature":26,"smokeTemperature":30,"waterTemperature":255,"lastSetAirTemperature":15,"lastSetPower":1,"lastSetWaterTemperature":255,"chronoEnabled":0,"hasRemoteRoomProbe":255,"realPower":5,"canGetMainVent":0,"canSetMainVent":0,"mainVentValue":0,"mainVentMin":0,"mainVentMax":255,"mainVentAutoValue":255,"mainVentOffValue":255,"canGetSxCanalization":0,"canSetSxCanalization":0,"sxCanalizationValue":0,"sxCanalizationMin":0,"sxCanalizationMax":255,"sxCanalizationAutoValue":255,"sxCanalizationOffValue":255,"canGetDxCanalization":0,"canSetDxCanalization":0,"dxCanalizationValue":40,"dxCanalizationMin":0,"dxCanalizationMax":255,"dxCanalizationAutoValue":255,"dxCanalizationOffValue":255,"canGetWaterTemperature":0,"canSetWaterTemperature":0,"isDeviceInAlarm":0,"pufferWaterTemperature":255,"boilerWaterTemperature":255,"kProbeH":255,"kProbeL":255,"kProbe":65535,"computedAirTemperature":26},"method":"get-state","idle":null}';
         }*/
         $response = json_decode($response);
-        $message = $response->message;
-        log::add('jollymec', 'debug', __(print_r($message, true), __FILE__));
-        curl_close($ch);
-        return $message;
+        if (!is_null($response)) {
+            $message = $response->message;
+            log::add('jollymec', 'debug', __(print_r($message, true), __FILE__));
+            curl_close($ch);
+            return $message;
+        }
+        else {
+            return null;
+        }
     }
 
     public static function efesto_get_state($mac_address) {
@@ -285,7 +290,7 @@ class jollymec extends eqLogic {
             $order->setTemplate('dashboard', 'badge');
             $order->setTemplate('mobile', 'badge');
             $order->setUnite('°C');
-            $order->setIsVisible(false);
+            $order->setIsVisible(0);
         }
         $order->setLogicalId('order');
         $order->setEqLogic_id($this->getId());
@@ -302,7 +307,7 @@ class jollymec extends eqLogic {
             $power->setName(__('Puissance', __FILE__));
             $power->setTemplate('dashboard', 'badge');
             $power->setTemplate('mobile', 'badge');
-            $power->setIsVisible(false);
+            $power->setIsVisible(0);
         }
         $power->setLogicalId('power');
         $power->setEqLogic_id($this->getId());
