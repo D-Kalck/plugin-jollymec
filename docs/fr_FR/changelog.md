@@ -1,3 +1,7 @@
+# 16/10/2019
+- Affichage correct du statut et de la puissance réelle (il faut effacer toutes les commandes et sauvegarder 2 fois chaque équipement, pour mettre à jour).
+- Nouvelle tentative pour les types génériques.
+
 # 14/10/2019
 - Correction d'un bug lors de l'enregistrement d'un équipement.
 

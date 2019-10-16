@@ -28,6 +28,8 @@ class jollymec extends eqLogic {
     const MANAGE_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/manage/heater/{MAC_ADDRESS}/';
     const REMOVE_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/remove/heater/{MAC_ADDRESS}/';
     const AJAX_URL   = 'http://jollymec.efesto.web2app.it/fr/ajax/action/frontend/response/ajax/';
+    const STATUS_TRANSLATION = array('OFF', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'ON', 'ON', 'Nettoyage Final', 'Stand-by', 'Stand-by');
+    const REAL_POWER_TRANSLATION = array('ECO', 'ECO', 'SIL', 'P1', 'P2', 'P3', 'P4', 'P5');
 
     /*private $articleCode = '';
     private $serialNumber = '';
@@ -62,45 +64,44 @@ class jollymec extends eqLogic {
         unlink(jeedom::getTmpFolder('jollymec').'/cookies.txt');
     }
 
+    public static function efesto_curl($url, $post_data = array(), $http_headers = array(), $nobody = false, $header_out = true, $header = true) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, jeedom::getTmpFolder('jollymec').'/cookies.txt');
+        curl_setopt($ch, CURLOPT_COOKIEFILE, jeedom::getTmpFolder('jollymec').'/cookies.txt');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_HEADER, $header);
+        curl_setopt($ch, CURLOPT_NOBODY, $nobody);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, $header_out);
+        if ($post_data) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        }
+        if ($http_headers) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $http_headers);
+        }
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return $response;
+    }
+
     public static function efesto_connect($connect_only = true) {
         self::efesto_logout();
         $data = array();
         log::add('jollymec', 'debug', __('Etape 1 : Connexion à Efesto', __FILE__));
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::LOGIN_URL);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, jeedom::getTmpFolder('jollymec').'/cookies.txt');
-        curl_setopt($ch, CURLOPT_COOKIEFILE, jeedom::getTmpFolder('jollymec').'/cookies.txt');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_exec($ch);
-        curl_close($ch);
+        self::efesto_curl(self::LOGIN_URL, array(), array(), true, true, true);
         log::add('jollymec', 'debug', __('Etape 2 : Connexion à Efesto', __FILE__));
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::LOGIN_URL);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, jeedom::getTmpFolder('jollymec').'/cookies.txt');
-        curl_setopt($ch, CURLOPT_COOKIEFILE, jeedom::getTmpFolder('jollymec').'/cookies.txt');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_NOBODY, $connect_only);
         $postfields = array(
             'login[username]' => config::byKey('email', 'jollymec'),
             'login[password]' => config::byKey('password', 'jollymec')
         );
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        $http_headers = array(
             'Upgrade-Insecure-Requests: 1',
             'Referer: '.self::LOGIN_URL,
             'Connection: keep-alive',
-        ));
-        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-        $response = curl_exec($ch);
-        $info = curl_getinfo($ch);
-        curl_close($ch);
+        );
+        $response = self::efesto_curl(self::LOGIN_URL, $postfields, $http_headers, $connect_only, true, true);
         return $response;
     }
 
@@ -128,28 +129,21 @@ class jollymec extends eqLogic {
     }
 
     public static function efesto_ajax($method, $params, $mac_address) {
-        self::efesto_connect(true);
+        if (!file_exists(jeedom::getTmpFolder('jollymec').'/cookies.txt')) {
+            self::efesto_connect(true);
+        }
         log::add('jollymec', 'debug', __("AJAX avec méthode : ".$method." => ".$params, __FILE__));
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::AJAX_URL);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, jeedom::getTmpFolder('jollymec').'/cookies.txt');
-        curl_setopt($ch, CURLOPT_COOKIEFILE, jeedom::getTmpFolder('jollymec').'/cookies.txt');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_POST, true);
         $postfields = array(
             'method' => $method,
             'params' => $params,
             'device' => strtoupper($mac_address)
         );
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        $http_headers = array(
             'Upgrade-Insecure-Requests: 1',
             'Referer: '.str_replace('{MAC_ADDRESS}', strtoupper($mac_address), self::MANAGE_URL),
             'Connection: keep-alive',
-        ));
-        $response = curl_exec($ch);
+        );
+        $response = self::efesto_curl(self::AJAX_URL, $postfields, $http_headers, false, false, false);
         log::add('jollymec', 'debug', __(print_r($response, true), __FILE__));
         /*if ($method == 'get-state') {
             $response = '{"status":0,"message":{"contactStatus":0,"deviceStatus":0,"airTemperature":26,"smokeTemperature":30,"waterTemperature":255,"lastSetAirTemperature":15,"lastSetPower":1,"lastSetWaterTemperature":255,"chronoEnabled":0,"hasRemoteRoomProbe":255,"realPower":5,"canGetMainVent":0,"canSetMainVent":0,"mainVentValue":0,"mainVentMin":0,"mainVentMax":255,"mainVentAutoValue":255,"mainVentOffValue":255,"canGetSxCanalization":0,"canSetSxCanalization":0,"sxCanalizationValue":0,"sxCanalizationMin":0,"sxCanalizationMax":255,"sxCanalizationAutoValue":255,"sxCanalizationOffValue":255,"canGetDxCanalization":0,"canSetDxCanalization":0,"dxCanalizationValue":40,"dxCanalizationMin":0,"dxCanalizationMax":255,"dxCanalizationAutoValue":255,"dxCanalizationOffValue":255,"canGetWaterTemperature":0,"canSetWaterTemperature":0,"isDeviceInAlarm":0,"pufferWaterTemperature":255,"boilerWaterTemperature":255,"kProbeH":255,"kProbeL":255,"kProbe":65535,"computedAirTemperature":26},"method":"get-state","idle":null}';
@@ -157,8 +151,8 @@ class jollymec extends eqLogic {
         $response = json_decode($response);
         if (!is_null($response)) {
             $message = $response->message;
-            log::add('jollymec', 'debug', __(print_r($message, true), __FILE__));
-            curl_close($ch);
+            //log::add('jollymec', 'debug', __(print_r($message, true), __FILE__));
+            //curl_close($ch);
             return $message;
         }
         else {
@@ -269,54 +263,6 @@ class jollymec extends eqLogic {
     }
 
     public function postSave() {
-        // Éteint ou Allumé
-        $status = $this->getCmd(null, 'status');
-        if (!is_object($status)) {
-            $status = new jollymecCmd();
-            $status->setName(__('Statut', __FILE__));
-            $status->setGeneric_type('HEATING_STATE');
-        }
-        $status->setLogicalId('status');
-        $status->setEqLogic_id($this->getId());
-        $status->setType('info');
-        $status->setSubType('binary');
-        $status->save();
-
-        // Consigne
-        $order = $this->getCmd(null, 'order');
-        if (!is_object($order)) {
-            $order = new jollymecCmd();
-            $order->setName(__('Consigne', __FILE__));
-            $order->setTemplate('dashboard', 'badge');
-            $order->setTemplate('mobile', 'badge');
-            $order->setUnite('°C');
-            $order->setIsVisible(0);
-        }
-        $order->setLogicalId('order');
-        $order->setEqLogic_id($this->getId());
-        $order->setType('info');
-        $order->setSubType('numeric');
-        $order->setConfiguration('minValue', 7);
-        $order->setConfiguration('maxValue', 40);
-        $order->save();
-
-        // Puissance
-        $power = $this->getCmd(null, 'power');
-        if (!is_object($power)) {
-            $power = new jollymecCmd();
-            $power->setName(__('Puissance', __FILE__));
-            $power->setTemplate('dashboard', 'badge');
-            $power->setTemplate('mobile', 'badge');
-            $power->setIsVisible(0);
-        }
-        $power->setLogicalId('power');
-        $power->setEqLogic_id($this->getId());
-        $power->setType('info');
-        $power->setSubType('numeric');
-        $power->setConfiguration('minValue', 0);
-        $power->setConfiguration('maxValue', 5);
-        $power->save();
-
         // Rafraichir
         $refresh = $this->getCmd(null, 'refresh');
         if (!is_object($refresh)) {
@@ -329,68 +275,34 @@ class jollymec extends eqLogic {
         $refresh->setSubType('other');
         $refresh->save();
 
-        // Allumer
-        $on = $this->getCmd(null, 'on');
-        if (!is_object($on)) {
-            $on = new jollymecCmd();
-            $on->setName(__('On', __FILE__));
-            $on->setGeneric_type('HEATING_ON');
+        // Puissance réelle 1:Eco
+        $realPower = $this->getCmd(null, 'realPower');
+        if (!is_object($realPower)) {
+            $realPower = new jollymecCmd();
+            $realPower->setName(__('Puissance réelle', __FILE__));
+            $realPower->setTemplate('dashboard', 'line');
+            $realPower->setTemplate('mobile', 'line');
         }
-        $on->setEqLogic_id($this->getId());
-        $on->setLogicalId('on');
-        $on->setType('action');
-        $on->setSubType('other');
-        $on->save();
+        $realPower->setEqLogic_id($this->getId());
+        $realPower->setLogicalId('realPower');
+        $realPower->setType('info');
+        $realPower->setSubType('string');
+        $realPower->save();
 
-        // Éteindre
-        $off = $this->getCmd(null, 'off');
-        if (!is_object($off)) {
-            $off = new jollymecCmd();
-            $off->setName(__('Off', __FILE__));
-            $off->setGeneric_type('HEATING_OFF');
+        // Température de la fumée
+        $smokeTemp = $this->getCmd(null, 'smokeTemp');
+        if (!is_object($smokeTemp)) {
+            $smokeTemp = new jollymecCmd();
+            $smokeTemp->setName(__('Fumées', __FILE__));
+            $smokeTemp->setTemplate('dashboard', 'line');
+            $smokeTemp->setTemplate('mobile', 'line');
+            $smokeTemp->setUnite('°C');
         }
-        $off->setEqLogic_id($this->getId());
-        $off->setLogicalId('off');
-        $off->setType('action');
-        $off->setSubType('other');
-        $off->save();
-
-        // Thermostat
-        $thermostat = $this->getCmd(null, 'thermostat');
-        if (!is_object($thermostat)) {
-            $thermostat = new jollymecCmd();
-            $thermostat->setName(__('Thermostat', __FILE__));
-            $thermostat->setTemplate('dashboard', 'button');
-            $thermostat->setTemplate('mobile', 'button');
-            $thermostat->setGeneric_type('GENERIC_ACTION');
-            $thermostat->setUnite('°C');
-        }
-        $thermostat->setEqLogic_id($this->getId());
-        $thermostat->setLogicalId('thermostat');
-        $thermostat->setType('action');
-        $thermostat->setSubType('slider');
-        $thermostat->setValue($order->getId());
-        $thermostat->setConfiguration('minValue', 7);
-        $thermostat->setConfiguration('maxValue', 40);
-        $thermostat->save();
-
-        // Réglage de puissance
-        $setPower = $this->getCmd(null, 'setPower');
-        if (!is_object($setPower)) {
-            $setPower = new jollymecCmd();
-            $setPower->setName(__('Réglage Puissance', __FILE__));
-            $setPower->setTemplate('dashboard', 'button');
-            $setPower->setTemplate('mobile', 'button');
-            $setPower->setGeneric_type('GENERIC_ACTION');
-        }
-        $setPower->setEqLogic_id($this->getId());
-        $setPower->setLogicalId('setPower');
-        $setPower->setType('action');
-        $setPower->setSubType('slider');
-        $setPower->setValue($power->getId());
-        $setPower->setConfiguration('minValue', 0);
-        $setPower->setConfiguration('maxValue', 5);
-        $setPower->save();
+        $smokeTemp->setEqLogic_id($this->getId());
+        $smokeTemp->setLogicalId('smokeTemp');
+        $smokeTemp->setType('info');
+        $smokeTemp->setSubType('numeric');
+        $smokeTemp->save();
 
         // Température
         $airTemp = $this->getCmd(null, 'airTemp');
@@ -408,34 +320,125 @@ class jollymec extends eqLogic {
         $airTemp->setSubType('numeric');
         $airTemp->save();
 
-        // Température de la fumée
-        $smokeTemp = $this->getCmd(null, 'smokeTemp');
-        if (!is_object($smokeTemp)) {
-            $smokeTemp = new jollymecCmd();
-            $smokeTemp->setName(__('Fumées', __FILE__));
-            $smokeTemp->setTemplate('dashboard', 'line');
-            $smokeTemp->setTemplate('mobile', 'line');
-            $smokeTemp->setUnite('°C');
+        // Allumer
+        $on = $this->getCmd(null, 'on');
+        if (!is_object($on)) {
+            $on = new jollymecCmd();
+            $on->setName(__('On', __FILE__));
+            $on->setGeneric_type('ENERGY_ON');
         }
-        $smokeTemp->setEqLogic_id($this->getId());
-        $smokeTemp->setLogicalId('smokeTemp');
-        $smokeTemp->setType('info');
-        $smokeTemp->setSubType('numeric');
-        $smokeTemp->save();
+        $on->setEqLogic_id($this->getId());
+        $on->setLogicalId('on');
+        $on->setType('action');
+        $on->setSubType('other');
+        $on->save();
 
-        // Puissance réelle
-        $realPower = $this->getCmd(null, 'realPower');
-        if (!is_object($realPower)) {
-            $realPower = new jollymecCmd();
-            $realPower->setName(__('Puissance réelle', __FILE__));
-            $realPower->setTemplate('dashboard', 'line');
-            $realPower->setTemplate('mobile', 'line');
+        // Éteindre
+        $off = $this->getCmd(null, 'off');
+        if (!is_object($off)) {
+            $off = new jollymecCmd();
+            $off->setName(__('Off', __FILE__));
+            $off->setGeneric_type('ENERGY_OFF');
         }
-        $realPower->setEqLogic_id($this->getId());
-        $realPower->setLogicalId('realPower');
-        $realPower->setType('info');
-        $realPower->setSubType('numeric');
-        $realPower->save();
+        $off->setEqLogic_id($this->getId());
+        $off->setLogicalId('off');
+        $off->setType('action');
+        $off->setSubType('other');
+        $off->save();
+
+        // Status du Poêle Éteint ou Allumé
+        /*
+         0 OFF
+         1-6 Allumage
+         7 ON
+         9 Nettoyage Final
+         10-11 Stand-by
+        */
+        $status = $this->getCmd(null, 'status');
+        if (!is_object($status)) {
+            $status = new jollymecCmd();
+            $status->setName(__('Statut', __FILE__));
+            $status->setGeneric_type('ENERGY_STATE');
+        }
+        $status->setLogicalId('status');
+        $status->setEqLogic_id($this->getId());
+        $status->setType('info');
+        $status->setSubType('string');
+        $status->save();
+
+        // Consigne
+        $order = $this->getCmd(null, 'order');
+        if (!is_object($order)) {
+            $order = new jollymecCmd();
+            $order->setName(__('Consigne', __FILE__));
+            $order->setTemplate('dashboard', 'badge');
+            $order->setTemplate('mobile', 'badge');
+            $order->setGeneric_type('GENERIC_INFO');
+            $order->setUnite('°C');
+            $order->setIsVisible(0);
+        }
+        $order->setLogicalId('order');
+        $order->setEqLogic_id($this->getId());
+        $order->setType('info');
+        $order->setSubType('numeric');
+        $order->setConfiguration('minValue', '7');
+        $order->setConfiguration('maxValue', '40');
+        $order->save();
+
+        // Puissance
+        $power = $this->getCmd(null, 'power');
+        if (!is_object($power)) {
+            $power = new jollymecCmd();
+            $power->setName(__('Puissance', __FILE__));
+            $power->setTemplate('dashboard', 'badge');
+            $power->setTemplate('mobile', 'badge');
+            $power->setGeneric_type('GENERIC_INFO');
+            $power->setIsVisible(0);
+        }
+        $power->setLogicalId('power');
+        $power->setEqLogic_id($this->getId());
+        $power->setType('info');
+        $power->setSubType('numeric');
+        $power->setConfiguration('minValue', '0');
+        $power->setConfiguration('maxValue', '5');
+        $power->save();
+
+        // Thermostat
+        $thermostat = $this->getCmd(null, 'thermostat');
+        if (!is_object($thermostat)) {
+            $thermostat = new jollymecCmd();
+            $thermostat->setName(__('Thermostat', __FILE__));
+            $thermostat->setTemplate('dashboard', 'button');
+            $thermostat->setTemplate('mobile', 'button');
+            $thermostat->setGeneric_type('GENERIC_ACTION');
+            $thermostat->setUnite('°C');
+        }
+        $thermostat->setEqLogic_id($this->getId());
+        $thermostat->setLogicalId('thermostat');
+        $thermostat->setType('action');
+        $thermostat->setSubType('slider');
+        $thermostat->setValue($order->getId());
+        $thermostat->setConfiguration('minValue', '7');
+        $thermostat->setConfiguration('maxValue', '40');
+        $thermostat->save();
+
+        // Réglage de puissance
+        $setPower = $this->getCmd(null, 'setPower');
+        if (!is_object($setPower)) {
+            $setPower = new jollymecCmd();
+            $setPower->setName(__('Réglage Puissance', __FILE__));
+            $setPower->setTemplate('dashboard', 'button');
+            $setPower->setTemplate('mobile', 'button');
+            $setPower->setGeneric_type('GENERIC_ACTION');
+        }
+        $setPower->setEqLogic_id($this->getId());
+        $setPower->setLogicalId('setPower');
+        $setPower->setType('action');
+        $setPower->setSubType('slider');
+        $setPower->setValue($power->getId());
+        $setPower->setConfiguration('minValue', '0');
+        $setPower->setConfiguration('maxValue', '5');
+        $setPower->save();
     }
 
     public function preUpdate() {
@@ -470,7 +473,7 @@ class jollymecCmd extends cmd {
                 //$eqLogic->updateHeaterData();
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
                 if (isset($message->deviceStatus)) {
-                    $eqLogic->checkAndUpdateCmd('status', $message->deviceStatus);
+                    $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
                 }
                 if (isset($message->lastSetAirTemperature)) {
                     $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
@@ -485,13 +488,13 @@ class jollymecCmd extends cmd {
                     $eqLogic->checkAndUpdateCmd('smokeTemp', $message->smokeTemperature);
                 }
                 if (isset($message->realPower)) {
-                    $eqLogic->checkAndUpdateCmd('realPower', $message->realPower);
+                    $eqLogic->checkAndUpdateCmd('realPower', jollymec::REAL_POWER_TRANSLATION[$message->realPower]);
                 }
                 break;
             case 'status':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
                 if (isset($message->deviceStatus)) {
-                    $eqLogic->checkAndUpdateCmd('status', $message->deviceStatus);
+                    $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
                 }
                 break;
             case 'order':
@@ -521,7 +524,7 @@ class jollymecCmd extends cmd {
             case 'realPower':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
                 if (isset($message->realPower)) {
-                    $eqLogic->checkAndUpdateCmd('realPower', $message->realPower);
+                    $eqLogic->checkAndUpdateCmd('realPower', jollymec::REAL_POWER_TRANSLATION[$message->realPower]);
                 }
                 break;
             case 'on':
