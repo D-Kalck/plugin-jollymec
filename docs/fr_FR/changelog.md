@@ -1,3 +1,6 @@
+# 19/10/2019
+- Correction d'un problème avec les version récentes de PHP.
+
 # 16/10/2019
 - Affichage correct du statut et de la puissance réelle (il faut effacer toutes les commandes et sauvegarder 2 fois chaque équipement, pour mettre à jour).
 - Nouvelle tentative pour les types génériques.
