@@ -54,9 +54,6 @@ class jollymec extends eqLogic {
         }
     }
 
-    /*public static function cronDaily() {
-    }*/
-
     public static function efesto_logout() {
         if (!file_exists(jeedom::getTmpFolder('jollymec').'/cookies.txt')) {
             return;

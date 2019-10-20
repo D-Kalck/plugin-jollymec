@@ -20,7 +20,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 <br/>
                 <span>{{Configuration}}</span>
             </div>
-    </div>
+        </div>
         <legend><i class="fas fa-table"></i>  {{Mes poêles Jolly Mec}}</legend>
         <input class="form-control" placeholder="{{Rechercher}}" id="in_searchEqlogic" />
         <div class="eqLogicThumbnailContainer">
@@ -96,8 +96,8 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-lg-3 control-label">{{Adresse MAC}}</label>
-                            <div class="col-lg-4">
+                            <label class="col-sm-3 control-label">{{Adresse MAC}}</label>
+                            <div class="col-sm-3">
                                 <input type="text" class="eqLogicAttr form-control" data-l1key="logicalId" placeholder="Logical ID" readonly />
                             </div>
                         </div>
