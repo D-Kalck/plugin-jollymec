@@ -1,3 +1,6 @@
+# 20/10/2019
+- Logs un peu plus propres.
+
 # 19/10/2019
 - Correction d'un problème avec les version récentes de PHP.
 
