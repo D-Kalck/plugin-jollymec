@@ -28,8 +28,10 @@ class jollymec extends eqLogic {
     const MANAGE_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/manage/heater/{MAC_ADDRESS}/';
     const REMOVE_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/remove/heater/{MAC_ADDRESS}/';
     const AJAX_URL   = 'http://jollymec.efesto.web2app.it/fr/ajax/action/frontend/response/ajax/';
-    const STATUS_TRANSLATION = array('OFF', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'ON', 'ON', 'Nettoyage Final', 'Stand-by', 'Stand-by');
+    const STATUS_TRANSLATION = array('OFF', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'ON', 'ON', 'Nettoyage Final', 'Stand-by', 'Stand-by', 'Alarme', 'Alarme');
+    const STATUS_ALARMS = array(12, 13, 101);
     const REAL_POWER_TRANSLATION = array('ECO', 'ECO', 'SIL', 'P1', 'P2', 'P3', 'P4', 'P5');
+    const ALARMS = array('', 'Black out', 'Sonde fumées', 'Hot fumées', 'Aspirateur en panne', 'Manque allumage', 'Finit pellet', 'Sécurité thermique', 'Manque dépression', 'Tirage minimum', 'Erreur vis sans fin', 'Encoder vis sans fin', 'Flamme en panne', 'Sécurité pellet', 'Sécurité carte', 'Service 24h', 'Sonde Ambiante', 'Niveau pellet');
 
     /*private $articleCode = '';
     private $serialNumber = '';
@@ -147,13 +149,13 @@ class jollymec extends eqLogic {
         $response = json_decode($response);
         if (!is_null($response)) {
             $message = $response->message;
-            log::add('jollymec', 'debug', __("Response : ".print_r($message, true), __FILE__));
-            return $message;
+            if (!isset($message->lastSetPower) || $message->lastSetPower < 6) {
+                log::add('jollymec', 'debug', __("Response : ".print_r($message, true), __FILE__));
+                return $message;
+            }
         }
-        else {
-            log::add('jollymec', 'debug', __("Incorrect Response", __FILE__));
-            return null;
-        }
+        log::add('jollymec', 'debug', __("Incorrect Response", __FILE__));
+        return null;
     }
 
     public static function efesto_get_state($mac_address) {
@@ -200,6 +202,7 @@ class jollymec extends eqLogic {
         $eqLogic->setEqType_name('jollymec');
         $eqLogic->setIsEnable(1);
         $eqLogic->setIsVisible(1);
+        $eqLogic->setTimeout(20);
         $eqLogic->save();
 
         event::add('jeedom::alert', array(
@@ -469,7 +472,12 @@ class jollymecCmd extends cmd {
                 //$eqLogic->updateHeaterData();
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
                 if (isset($message->deviceStatus)) {
-                    $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
+                    if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
+                        $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
+                    }
+                    else {
+                        $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
+                    }
                 }
                 if (isset($message->lastSetAirTemperature)) {
                     $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
@@ -490,7 +498,12 @@ class jollymecCmd extends cmd {
             case 'status':
                 $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
                 if (isset($message->deviceStatus)) {
-                    $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
+                    if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
+                        $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
+                    }
+                    else {
+                        $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
+                    }
                 }
                 break;
             case 'order':

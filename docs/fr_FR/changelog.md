@@ -1,3 +1,6 @@
+# 26/10/2019
+- Gestion des messages d'alertes.
+
 # 20/10/2019
 - Logs un peu plus propres.
 - Petite correction visuelle.
