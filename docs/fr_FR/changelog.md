@@ -1,3 +1,6 @@
+# 05/11/2019
+- On ré-essaye de passer une commande lorsque que la réponse du service est incorrecte.
+
 # 26/10/2019
 - Gestion des messages d'alertes.
 

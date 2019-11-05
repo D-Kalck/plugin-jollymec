@@ -42,7 +42,17 @@ class jollymec extends eqLogic {
     private $county = '';
     private $city = '';*/
 
+    public static $command_queue = array();
+
     /*     * ***********************Methode static*************************** */
+
+    public static function cron() {
+        if (count(self::$command_queue) > 0) {
+            log::add('jollymec', 'debug', __("Gestion de la queue", __FILE__));
+            $command = array_shift(self::$command_queue);
+            self::efesto_ajax($command[0], $command[1], $command[2]);
+        }
+    }
 
     public static function cron5() {
         foreach (self::byType('jollymec') as $jollymec) {//parcours tous les équipements du plugin vdm
@@ -150,11 +160,15 @@ class jollymec extends eqLogic {
         if (!is_null($response)) {
             $message = $response->message;
             if (!isset($message->lastSetPower) || $message->lastSetPower < 6) {
-                log::add('jollymec', 'debug', __("Response : ".print_r($message, true), __FILE__));
+                log::add('jollymec', 'debug', __("Réponse : ".print_r($message, true), __FILE__));
                 return $message;
             }
         }
-        log::add('jollymec', 'debug', __("Incorrect Response", __FILE__));
+        log::add('jollymec', 'debug', __("Réponse incorrecte", __FILE__));
+        if ($method != 'get-state') {
+            self::$command_queue[] = array($method, $params, $mac_address);
+            log::add('jollymec', 'debug', __("Ajout de la méthode à la queue", __FILE__));
+        }
         return null;
     }
 
