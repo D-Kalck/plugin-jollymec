@@ -211,8 +211,8 @@ class jollymec extends eqLogic {
         if (!is_null($response)) {
             $message = $response->message;
             if (!isset($message->lastSetPower) || $message->lastSetPower < 6) {
-                log::add('jollymec', 'debug', __("Réponse : ".print_r($message, true), __FILE__));
-                return $message;
+                log::add('jollymec', 'debug', __("Réponse : ".print_r($response, true), __FILE__));
+                return $response;
             }
         }
         log::add('jollymec', 'error', __("Réponse incorrecte", __FILE__));
@@ -556,7 +556,8 @@ class jollymecCmd extends cmd {
         switch ($this->getLogicalId()) {
             case 'refresh':
                 //$eqLogic->updateHeaterData();
-                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
                 if (isset($message->deviceStatus)) {
                     if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
                         $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
@@ -582,7 +583,8 @@ class jollymecCmd extends cmd {
                 }
                 break;
             case 'status':
-                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
                 if (isset($message->deviceStatus)) {
                     if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
                         $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
@@ -593,50 +595,69 @@ class jollymecCmd extends cmd {
                 }
                 break;
             case 'order':
-                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
                 if (isset($message->lastSetAirTemperature)) {
                     $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
                 }
                 break;
             case 'power':
-                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
                 if (isset($message->lastSetPower)) {
                     $eqLogic->checkAndUpdateCmd('power', $message->lastSetPower);
                 }
                 break;
             case 'airTemp':
-                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
                 if (isset($message->airTemperature)) {
                     $eqLogic->checkAndUpdateCmd('airTemp', $message->airTemperature);
                 }
                 break;
             case 'smokeTemp':
-                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
                 if (isset($message->smokeTemperature)) {
                     $eqLogic->checkAndUpdateCmd('smokeTemp', $message->smokeTemperature);
                 }
                 break;
             case 'realPower':
-                $message = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
                 if (isset($message->realPower)) {
                     $eqLogic->checkAndUpdateCmd('realPower', jollymec::REAL_POWER_TRANSLATION[$message->realPower]);
                 }
                 break;
             case 'on':
-                jollymec::efesto_heater_on($eqLogic->getLogicalId());
-                $cmd = $eqLogic->getCmd(null, 'refresh');
-                if (!is_object($cmd)) {
-                    return;
+                $response = jollymec::efesto_heater_on($eqLogic->getLogicalId());
+                $message = $response->message;
+                if (isset($message->deviceStatus)) {
+                    if ($response->idle) {
+                        $eqLogic->checkAndUpdateCmd('status', $response->idle->idle_label);
+                    }
+                    else if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
+                        $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
+                    }
+                    else {
+                        $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
+                    }
                 }
-                $cmd->execCmd();
                 break;
             case 'off':
-                jollymec::efesto_heater_off($eqLogic->getLogicalId());
-                $cmd = $eqLogic->getCmd(null, 'refresh');
-                if (!is_object($cmd)) {
-                    return;
+                $response = jollymec::efesto_heater_off($eqLogic->getLogicalId());
+                $message = $response->message;
+                if (isset($message->deviceStatus)) {
+                    if ($response->idle) {
+                        $eqLogic->checkAndUpdateCmd('status', $response->idle->idle_label);
+                    }
+                    else if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
+                        $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
+                    }
+                    else {
+                        $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
+                    }
                 }
-                $cmd->execCmd();
                 break;
             case 'thermostat':
                 if (!isset($_options['slider']) || $_options['slider'] == '' || !is_numeric(intval($_options['slider']))) {
