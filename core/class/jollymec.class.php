@@ -183,7 +183,7 @@ class jollymec extends eqLogic {
             return $chrono;
         }
         else {
-            log::add('jollymec', 'debug', __("Impossible de récupérer les données du ChronoThermostat", __FILE__));
+            log::add('jollymec', 'error', __("Impossible de récupérer les données du ChronoThermostat", __FILE__));
             return false;
         }
     }
@@ -215,7 +215,7 @@ class jollymec extends eqLogic {
                 return $message;
             }
         }
-        log::add('jollymec', 'debug', __("Réponse incorrecte", __FILE__));
+        log::add('jollymec', 'error', __("Réponse incorrecte", __FILE__));
         if ($method != 'get-state') {
             self::$command_queue[] = array($method, $params, $mac_address);
             log::add('jollymec', 'debug', __("Ajout de la méthode à la queue", __FILE__));
@@ -318,7 +318,7 @@ class jollymec extends eqLogic {
                 $eqLogic->setIsVisible(1);
                 $eqLogic->save();
                 $added = true;
-                log::add('jollymec', 'error', 'Poêle '.$mac_address.' ajouté');
+                log::add('jollymec', 'debug', 'Poêle '.$mac_address.' ajouté');
             }
         }
         if (!$added) {

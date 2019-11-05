@@ -1,4 +1,5 @@
 # 05/11/2019
+- Meilleure gestion des logs.
 - Ajout de la gestion du ChronoThermostat.
 - On ré-essaye de passer une commande lorsque que la réponse du service est incorrecte.
 
