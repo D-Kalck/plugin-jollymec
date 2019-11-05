@@ -1,4 +1,5 @@
 # 05/11/2019
+- Ajout de la gestion du ChronoThermostat.
 - On ré-essaye de passer une commande lorsque que la réponse du service est incorrecte.
 
 # 26/10/2019

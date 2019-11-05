@@ -58,6 +58,138 @@ function addCmdToTable(_cmd) {
     }
     jeedom.cmd.changeType($('#table_cmd tbody tr:last'), init(_cmd.subType));
 }
+/*
+function prePrintEqLogic(_eqLogic_id) {
+    console.log('prePrintEqLogic');
+    console.log(_eqLogic_id);
+}*/
+
+function printEqLogic(_eqLogic) {
+    _eqLogic.logicalId;
+    if ($('#chronotab').length) {
+        $('#chronotab form fieldset').prop('disabled', true);
+        $.ajax({
+            async: false,
+            type: "POST",
+            url: "plugins/jollymec/core/ajax/jollymec.ajax.php",
+            data: {
+                action: "get_chrono",
+                id: _eqLogic.id,
+            },
+            dataType: 'json',
+            error: function (request, status, error) {
+                handleAjaxError(request, status, error);
+            },
+            success: function (data) { // si l'appel a bien fonctionné
+                if (data.state != 'ok') {
+                    $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                    return;
+                }
+                if (data.result != false) {
+                    console.log(data.result);
+                    console.log(data.result['enableChrono']);
+                    console.log(data.result['programs']);
+                    //console.log(data.result[1]);
+                    console.log(data.result[1]['gg']);
+                    console.log(data.result[1]['start']);
+                    console.log(data.result[1]['stop']);
+                    console.log(data.result[1]['setPower']);
+                    console.log(data.result[1]['setTemp']);
+                    console.log(data.result[2]['gg']);
+                    console.log(data.result[2]['start']);
+                    console.log(data.result[2]['stop']);
+                    console.log(data.result[2]['setPower']);
+                    console.log(data.result[2]['setTemp']);
+                    //$('#chronotab').append('<div>Test ! ' + JSON.stringify(data.result) + '</div>');
+                    $('#chronotab *[name="chrono[enableChrono]"]').prop('checked', parseInt(data.result['enableChrono']));
+                    $('#chronotab *[name="chrono[programs]"]')[0].value = data.result['programs'];
+                    $('#chronotab *[name="chrono[1][gg][0]"]').prop('checked', parseInt(data.result[1]['gg'][0]));
+                    $('#chronotab *[name="chrono[1][gg][1]"]').prop('checked', parseInt(data.result[1]['gg'][1]));
+                    $('#chronotab *[name="chrono[1][gg][2]"]').prop('checked', parseInt(data.result[1]['gg'][2]));
+                    $('#chronotab *[name="chrono[1][gg][3]"]').prop('checked', parseInt(data.result[1]['gg'][3]));
+                    $('#chronotab *[name="chrono[1][gg][4]"]').prop('checked', parseInt(data.result[1]['gg'][4]));
+                    $('#chronotab *[name="chrono[1][gg][5]"]').prop('checked', parseInt(data.result[1]['gg'][5]));
+                    $('#chronotab *[name="chrono[1][gg][6]"]').prop('checked', parseInt(data.result[1]['gg'][6]));
+                    $('#chronotab *[name="chrono[1][start]"]').val(data.result[1]['start']);
+                    $('#chronotab *[name="chrono[1][stop]"]').val(data.result[1]['stop']);
+                    $('#chronotab *[name="chrono[1][setPower]"]').val(data.result[1]['setPower']);
+                    $('#chronotab *[name="chrono[1][setTemp]"]').val(data.result[1]['setTemp']);
+
+                    $('#chronotab *[name="chrono[2][gg][0]"]').prop('checked', parseInt(data.result[2]['gg'][0]));
+                    $('#chronotab *[name="chrono[2][gg][1]"]').prop('checked', parseInt(data.result[2]['gg'][1]));
+                    $('#chronotab *[name="chrono[2][gg][2]"]').prop('checked', parseInt(data.result[2]['gg'][2]));
+                    $('#chronotab *[name="chrono[2][gg][3]"]').prop('checked', parseInt(data.result[2]['gg'][3]));
+                    $('#chronotab *[name="chrono[2][gg][4]"]').prop('checked', parseInt(data.result[2]['gg'][4]));
+                    $('#chronotab *[name="chrono[2][gg][5]"]').prop('checked', parseInt(data.result[2]['gg'][5]));
+                    $('#chronotab *[name="chrono[2][gg][6]"]').prop('checked', parseInt(data.result[2]['gg'][6]));
+                    $('#chronotab *[name="chrono[2][start]"]').val(data.result[2]['start']);
+                    $('#chronotab *[name="chrono[2][stop]"]').val(data.result[2]['stop']);
+                    $('#chronotab *[name="chrono[2][setPower]"]').val(data.result[2]['setPower']);
+                    $('#chronotab *[name="chrono[2][setTemp]"]').val(data.result[2]['setTemp']);
+
+                    $('#chronotab *[name="chrono[3][gg][0]"]').prop('checked', parseInt(data.result[3]['gg'][0]));
+                    $('#chronotab *[name="chrono[3][gg][1]"]').prop('checked', parseInt(data.result[3]['gg'][1]));
+                    $('#chronotab *[name="chrono[3][gg][2]"]').prop('checked', parseInt(data.result[3]['gg'][2]));
+                    $('#chronotab *[name="chrono[3][gg][3]"]').prop('checked', parseInt(data.result[3]['gg'][3]));
+                    $('#chronotab *[name="chrono[3][gg][4]"]').prop('checked', parseInt(data.result[3]['gg'][4]));
+                    $('#chronotab *[name="chrono[3][gg][5]"]').prop('checked', parseInt(data.result[3]['gg'][5]));
+                    $('#chronotab *[name="chrono[3][gg][6]"]').prop('checked', parseInt(data.result[3]['gg'][6]));
+                    $('#chronotab *[name="chrono[3][start]"]').val(data.result[3]['start']);
+                    $('#chronotab *[name="chrono[3][stop]"]').val(data.result[3]['stop']);
+                    $('#chronotab *[name="chrono[3][setPower]"]').val(data.result[3]['setPower']);
+                    $('#chronotab *[name="chrono[3][setTemp]"]').val(data.result[3]['setTemp']);
+
+                    $('#chronotab *[name="chrono[4][gg][0]"]').prop('checked', parseInt(data.result[4]['gg'][0]));
+                    $('#chronotab *[name="chrono[4][gg][1]"]').prop('checked', parseInt(data.result[4]['gg'][1]));
+                    $('#chronotab *[name="chrono[4][gg][2]"]').prop('checked', parseInt(data.result[4]['gg'][2]));
+                    $('#chronotab *[name="chrono[4][gg][3]"]').prop('checked', parseInt(data.result[4]['gg'][3]));
+                    $('#chronotab *[name="chrono[4][gg][4]"]').prop('checked', parseInt(data.result[4]['gg'][4]));
+                    $('#chronotab *[name="chrono[4][gg][5]"]').prop('checked', parseInt(data.result[4]['gg'][5]));
+                    $('#chronotab *[name="chrono[4][gg][6]"]').prop('checked', parseInt(data.result[4]['gg'][6]));
+                    $('#chronotab *[name="chrono[4][start]"]').val(data.result[4]['start']);
+                    $('#chronotab *[name="chrono[4][stop]"]').val(data.result[4]['stop']);
+                    $('#chronotab *[name="chrono[4][setPower]"]').val(data.result[4]['setPower']);
+                    $('#chronotab *[name="chrono[4][setTemp]"]').val(data.result[4]['setTemp']);
+                    //$('#chronotab form').serialize()
+                    $('#chronotab form fieldset').prop('disabled', false);
+                    return;
+                }
+                else {
+                    $('#div_alert').showAlert({message: 'Impossible de récupérer les données du ChronoThermostat', level: 'danger'});
+                    return;
+                }
+            }
+        });
+    }
+}
+
+function saveEqLogic(_eqLogic) {
+    if ($('#chronotab').length && $('#chronotab form fieldset').prop('disabled')) {
+        return _eqLogic;
+    }
+    var chrono_values = $('#chronotab form').serialize();
+    console.log(chrono_values);
+    $.ajax({
+        type: "POST",
+        url: "plugins/jollymec/core/ajax/jollymec.ajax.php",
+        data: {
+            action: "set_chrono",
+            id: _eqLogic.id,
+            chrono_values: chrono_values,
+        },
+        dataType: 'json',
+        error: function (request, status, error) {
+            handleAjaxError(request, status, error);
+        },
+        success: function (data) { // si l'appel a bien fonctionné
+            if (data.state != 'ok') {
+                $('#div_alert').showAlert({message: data.result, level: 'danger'});
+                return;
+            }
+        }
+    });
+    return _eqLogic;
+}
 
 function jollymecSync() {
     $.ajax({

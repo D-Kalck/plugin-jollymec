@@ -37,6 +37,12 @@ if (!isConnect('admin')) {
             </div>
         </div>
         <div class="form-group">
+            <label class="col-lg-4 control-label">{{Activer la gestion du ChronoThermostat}}</label>
+            <div class="col-lg-4">
+                <input type="checkbox" class="configKey" data-l1key="handle_chronothermostat">
+            </div>
+        </div>
+        <div class="form-group">
             <label class="col-lg-4 control-label">{{Synchroniser les poêles}}</label>
             <div class="col-lg-2">
               <a class="btn btn-default" id="bt_syncJollyMec"><i class='fa fa-plus-circle'></i> {{Synchroniser}}</a>

@@ -27,6 +27,7 @@ class jollymec extends eqLogic {
     const ADD_URL    = 'http://jollymec.efesto.web2app.it/fr/heaters/action/add/';
     const MANAGE_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/manage/heater/{MAC_ADDRESS}/';
     const REMOVE_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/remove/heater/{MAC_ADDRESS}/';
+    const CHRONO_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/chrono/heater/{MAC_ADDRESS}/';
     const AJAX_URL   = 'http://jollymec.efesto.web2app.it/fr/ajax/action/frontend/response/ajax/';
     const STATUS_TRANSLATION = array('OFF', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'ON', 'ON', 'Nettoyage Final', 'Stand-by', 'Stand-by', 'Alarme', 'Alarme');
     const STATUS_ALARMS = array(12, 13, 101);
@@ -64,6 +65,7 @@ class jollymec extends eqLogic {
                 $cmd->execCmd(); // la commande existe on la lance
             }
         }
+        //self::efesto_get_chrono('DC4F22517994');
     }
 
     public static function efesto_logout() {
@@ -137,6 +139,55 @@ class jollymec extends eqLogic {
         }
     }
 
+    public static function efesto_get_chrono($mac_address) {
+        if (!file_exists(jeedom::getTmpFolder('jollymec').'/cookies.txt')) {
+            self::efesto_connect(true);
+        }
+        log::add('jollymec', 'debug', __("Récupération des données du ChronoThermostat", __FILE__));
+        $content = self::efesto_curl(str_replace('{MAC_ADDRESS}', strtoupper($mac_address), self::CHRONO_URL), array(), array(), false, false, false);
+        $doc = new DOMDocument();
+        $ret = @$doc->loadHTML($content);
+        $xpath = new DOMXPath($doc);
+        $chrono_query_input = '//form[@id="chrono-form"]//input[starts-with(@name, "chrono")]';
+        $chrono_query_select = '//form[@id="chrono-form"]//select[starts-with(@name, "chrono")]';
+        $chrono_input_values = $xpath->query($chrono_query_input);
+        $chrono_select_values = $xpath->query($chrono_query_select);
+        if ($chrono_input_values->length > 0 && $chrono_select_values->length > 0) {
+            $chrono = array();
+            for ($i = 0; $i < $chrono_input_values->length; $i++) {
+                $type = $chrono_input_values->item($i)->getAttribute('type');
+                $name = str_replace(array('[', ']'), array("['", "']"), $chrono_input_values->item($i)->getAttribute('name'));
+                switch ($type) {
+                    case 'hidden':
+                    case 'input':
+                        $value = $chrono_input_values->item($i)->getAttribute('value');
+                        break;
+                    case 'checkbox':
+                        $value = $chrono_input_values->item($i)->getAttribute('checked') != null ? 1 : 0;
+                        break;
+                }
+                $exp = '$'.$name.' = "'.$value.'";';
+                eval($exp);
+            }
+            for ($i = 0; $i < $chrono_select_values->length; $i++) {
+                $name = str_replace(array('[', ']'), array("['", "']"), $chrono_select_values->item($i)->getAttribute('name'));
+                for ($j = 0; $j < $chrono_select_values->item($i)->childNodes->length; $j++) {
+                    if ($chrono_select_values->item($i)->childNodes->item($j)->hasAttribute('selected')) {
+                        $value = $chrono_select_values->item($i)->childNodes->item($j)->getAttribute('value');
+                    }
+                }
+                $exp = '$'.$name.' = "'.$value.'";';
+                eval($exp);
+            }
+            log::add('jollymec', 'debug', __(print_r($chrono, true), __FILE__));
+            return $chrono;
+        }
+        else {
+            log::add('jollymec', 'debug', __("Impossible de récupérer les données du ChronoThermostat", __FILE__));
+            return false;
+        }
+    }
+
     public static function efesto_ajax($method, $params, $mac_address) {
         if (!file_exists(jeedom::getTmpFolder('jollymec').'/cookies.txt')) {
             self::efesto_connect(true);
@@ -190,6 +241,27 @@ class jollymec extends eqLogic {
 
     public static function efesto_power($value, $mac_address) {
         return self::efesto_ajax('write-parameters-queue', 'set-power='.$value, $mac_address);
+    }
+
+    public static function efesto_chrono($value, $mac_address) {
+        log::add('jollymec', 'debug', __("Set Chrono", __FILE__));
+        /*
+        chrono[program]=4
+        chrono[enableChrono]=0/1
+        chrono[1][gg][0]=
+        chrono[1][gg][1]=
+        chrono[1][gg][2]=
+        chrono[1][gg][3]=
+        chrono[1][gg][4]=
+        chrono[1][gg][5]=
+        chrono[1][gg][6]=
+        chrono[1][start]=[0-144] //0 = 00:00, 1 = 00:10, 2 = 00:20 ... et 144 = OFF
+        chrono[1][stop]=[0-144] //0 = 00:00, 1 = 00:10, 2 = 00:20 ... et 144 = OFF
+        chrono[1][setPower]=[0-5]
+        chrono[1][setTemp]=[7-40]
+        */
+        log::add('jollymec', 'debug', __(print_r($value, true), __FILE__));
+        return self::efesto_ajax('update-chrono', $value, $mac_address);
     }
 
     public static function createFromDef($_def) {

@@ -36,6 +36,18 @@ try {
         ajax::success();
     }
 
+    if (init('action') == 'get_chrono') {
+        $jolly_mec = jollymec::byId(init('id'));
+        $return = jollymec::efesto_get_chrono($jolly_mec->getLogicalId());
+        ajax::success($return);
+    }
+
+    if (init('action') == 'set_chrono') {
+        $jolly_mec = jollymec::byId(init('id'));
+        $return = jollymec::efesto_chrono(init('chrono_values'), $jolly_mec->getLogicalId());
+        ajax::success($return);
+    }
+
     if (init('action') == '') {
 
     }
