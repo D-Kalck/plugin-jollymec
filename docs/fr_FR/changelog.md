@@ -1,4 +1,5 @@
 # 15/11/2019
+- Maintenant les nouvelles tentatives de passer des commandes devraient marcher.
 - Correction sur la gestion du ChronoThermostat.
 
 # 05/11/2019

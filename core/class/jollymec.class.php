@@ -43,14 +43,29 @@ class jollymec extends eqLogic {
     private $county = '';
     private $city = '';*/
 
-    public static $command_queue = array();
-
     /*     * ***********************Methode static*************************** */
 
+    protected static function queue_push($command) {
+        $command_queue = config::byKey('command_queue', 'jollymec', '', true);
+        $command_queue[] = $command;
+        config::save('command_queue', $command_queue, 'jollymec');
+    }
+
+    protected static function queue_shift() {
+        $command_queue = config::byKey('command_queue', 'jollymec', '', true);
+        $command = array_shift($command_queue);
+        config::save('command_queue', $command_queue, 'jollymec');
+        return $command;
+    }
+
+    protected static function get_queue() {
+        return config::byKey('command_queue', 'jollymec', '', true);
+    }
+
     public static function cron() {
-        if (count(self::$command_queue) > 0) {
+        $command = self::queue_shift();
+        if (!is_null($command)) {
             log::add('jollymec', 'debug', __("Gestion de la queue", __FILE__));
-            $command = array_shift(self::$command_queue);
             self::efesto_ajax($command[0], $command[1], $command[2]);
         }
     }
@@ -224,7 +239,7 @@ class jollymec extends eqLogic {
             log::add('jollymec', 'info', __("Réponse incorrecte", __FILE__));
         }
         if ($method != 'get-state') {
-            self::$command_queue[] = array($method, $params, $mac_address);
+            self::queue_push(array($method, $params, $mac_address));
             log::add('jollymec', 'debug', __("Ajout de la méthode à la queue", __FILE__));
         }
         return null;
