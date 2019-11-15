@@ -56,13 +56,13 @@ class jollymec extends eqLogic {
     }
 
     public static function cron5() {
-        foreach (self::byType('jollymec') as $jollymec) {//parcours tous les équipements du plugin vdm
-            if ($jollymec->getIsEnable() == 1) {//vérifie que l'équipement est actif
-                $cmd = $jollymec->getCmd(null, 'refresh');//retourne la commande "refresh si elle existe
-                if (!is_object($cmd)) {//Si la commande n'existe pas
-                    continue; //continue la boucle
+        foreach (self::byType('jollymec') as $jollymec) {
+            if ($jollymec->getIsEnable() == 1) {
+                $cmd = $jollymec->getCmd(null, 'refresh');
+                if (!is_object($cmd)) {
+                    continue;
                 }
-                $cmd->execCmd(); // la commande existe on la lance
+                $cmd->execCmd();
             }
         }
         //self::efesto_get_chrono('DC4F22517994');
@@ -94,6 +94,7 @@ class jollymec extends eqLogic {
         }
         $response = curl_exec($ch);
         curl_close($ch);
+        file_put_contents(jeedom::getTmpFolder('jollymec').'/latest_response', $response);
         return $response;
     }
 
@@ -171,6 +172,7 @@ class jollymec extends eqLogic {
             }
             for ($i = 0; $i < $chrono_select_values->length; $i++) {
                 $name = str_replace(array('[', ']'), array("['", "']"), $chrono_select_values->item($i)->getAttribute('name'));
+                $value = '144';
                 for ($j = 0; $j < $chrono_select_values->item($i)->childNodes->length; $j++) {
                     if ($chrono_select_values->item($i)->childNodes->item($j)->hasAttribute('selected')) {
                         $value = $chrono_select_values->item($i)->childNodes->item($j)->getAttribute('value');
@@ -214,8 +216,13 @@ class jollymec extends eqLogic {
                 log::add('jollymec', 'debug', __("Réponse : ".print_r($response, true), __FILE__));
                 return $response;
             }
+            else {
+                log::add('jollymec', 'info', __("Réponse incohérente", __FILE__));
+            }
         }
-        log::add('jollymec', 'info', __("Réponse incorrecte", __FILE__));
+        else {
+            log::add('jollymec', 'info', __("Réponse incorrecte", __FILE__));
+        }
         if ($method != 'get-state') {
             self::$command_queue[] = array($method, $params, $mac_address);
             log::add('jollymec', 'debug', __("Ajout de la méthode à la queue", __FILE__));

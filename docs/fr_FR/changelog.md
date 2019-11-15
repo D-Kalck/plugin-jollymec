@@ -1,3 +1,6 @@
+# 15/11/2019
+- Correction sur la gestion du ChronoThermostat.
+
 # 05/11/2019
 - Ajustements sur les niveaux de logs.
 - Meilleure gestion du statut des poêles.
