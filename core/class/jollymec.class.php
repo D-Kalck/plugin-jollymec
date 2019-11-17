@@ -582,6 +582,7 @@ class jollymecCmd extends cmd {
                 $message = $response->message;
                 if (isset($message->deviceStatus)) {
                     if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
+                        log::add('jollymec', 'error', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
                         $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
                     }
                     else {
@@ -609,6 +610,7 @@ class jollymecCmd extends cmd {
                 $message = $response->message;
                 if (isset($message->deviceStatus)) {
                     if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
+                        log::add('jollymec', 'error', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
                         $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
                     }
                     else {
@@ -659,6 +661,7 @@ class jollymecCmd extends cmd {
                         $eqLogic->checkAndUpdateCmd('status', $response->idle->idle_label);
                     }
                     else if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
+                        log::add('jollymec', 'error', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
                         $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
                     }
                     else {
@@ -674,6 +677,7 @@ class jollymecCmd extends cmd {
                         $eqLogic->checkAndUpdateCmd('status', $response->idle->idle_label);
                     }
                     else if (in_array($message->deviceStatus, jollymec::STATUS_ALARMS) && isset($message->isDeviceInAlarm)) {
+                        log::add('jollymec', 'error', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
                         $eqLogic->checkAndUpdateCmd('status', 'Alerte : '.jollymec::ALARMS[$message->isDeviceInAlarm]);
                     }
                     else {

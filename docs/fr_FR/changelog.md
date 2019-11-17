@@ -1,3 +1,6 @@
+# 17/11/2019
+- On envoie une erreur lorsqu'il y a une alerte sur le poêle.
+
 # 15/11/2019
 - Maintenant les nouvelles tentatives de passer des commandes devraient marcher.
 - Correction sur la gestion du ChronoThermostat.
