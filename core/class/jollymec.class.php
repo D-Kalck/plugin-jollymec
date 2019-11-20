@@ -47,7 +47,9 @@ class jollymec extends eqLogic {
 
     protected static function queue_push($command) {
         $command_queue = config::byKey('command_queue', 'jollymec', '', true);
-        $command_queue[] = $command;
+        if (!in_array($command, $command_queue)) {
+            $command_queue[] = $command;
+        }
         config::save('command_queue', $command_queue, 'jollymec');
     }
 

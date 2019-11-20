@@ -1,3 +1,6 @@
+# 20/11/2019
+- On ne rajoute pas dans la queue une commande qui y est déjà.
+
 # 17/11/2019
 - On envoie une erreur lorsqu'il y a une alerte sur le poêle.
 
