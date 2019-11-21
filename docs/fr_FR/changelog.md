@@ -1,3 +1,6 @@
+# 21/11/2019
+- Correction du problème de sauvegarde de l'objet du poêle.
+
 # 20/11/2019
 - On ne rajoute pas dans la queue une commande qui y est déjà.
 

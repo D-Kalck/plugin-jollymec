@@ -73,7 +73,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                         <div class="form-group">
                             <label class="col-sm-3 control-label" >{{Objet parent}}</label>
                             <div class="col-sm-3">
-                                <select id="sel_object" class=" form-control" data-l1key="object_id">
+                                <select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
                                     <option value="">{{Aucun}}</option>
                                     <?php
                                     foreach (jeeObject::all() as $object) {
