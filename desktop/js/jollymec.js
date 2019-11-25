@@ -164,11 +164,10 @@ function printEqLogic(_eqLogic) {
 }
 
 function saveEqLogic(_eqLogic) {
-    if ($('#chronotab').length && $('#chronotab form fieldset').prop('disabled')) {
+    if (!$('#chronotab').length) {
         return _eqLogic;
     }
     var chrono_values = $('#chronotab form').serialize();
-    console.log(chrono_values);
     $.ajax({
         type: "POST",
         url: "plugins/jollymec/core/ajax/jollymec.ajax.php",

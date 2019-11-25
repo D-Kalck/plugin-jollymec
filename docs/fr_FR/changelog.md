@@ -1,3 +1,6 @@
+# 25/11/2019
+- Correction du problème supprimant la configuration du ChronoThermostat si celui-ci n'est pas géré par le plugin.
+
 # 21/11/2019
 - Correction du problème de sauvegarde de l'objet du poêle.
 - Mise à jour de la documentation. 
