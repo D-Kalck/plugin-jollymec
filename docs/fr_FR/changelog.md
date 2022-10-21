@@ -1,3 +1,7 @@
+# 21/10/2022
+- Ajout d'une info binaire "Etat" pour savoir si le poele est allumé ou pas
+- Ajout de la valeur des infos dans la liste des commandes pour Jeedom 4.3
+
 # 25/11/2019
 - Correction du problème supprimant la configuration du ChronoThermostat si celui-ci n'est pas géré par le plugin.
 

@@ -31,6 +31,7 @@ class jollymec extends eqLogic {
     const AJAX_URL   = 'http://jollymec.efesto.web2app.it/fr/ajax/action/frontend/response/ajax/';
     const STATUS_TRANSLATION = array('OFF', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'ON', 'ON', 'Nettoyage Final', 'Stand-by', 'Stand-by', 'Alarme', 'Alarme');
     const STATUS_ALARMS = array(12, 13, 101);
+    const STATE_OFF = array(0);
     const REAL_POWER_TRANSLATION = array('ECO', 'ECO', 'SIL', 'P1', 'P2', 'P3', 'P4', 'P5');
     const ALARMS = array('', 'Black out', 'Sonde fumées', 'Hot fumées', 'Aspirateur en panne', 'Manque allumage', 'Finit pellet', 'Sécurité thermique', 'Manque dépression', 'Tirage minimum', 'Erreur vis sans fin', 'Encoder vis sans fin', 'Flamme en panne', 'Sécurité pellet', 'Sécurité carte', 'Service 24h', 'Sonde Ambiante', 'Niveau pellet');
 
@@ -455,7 +456,7 @@ class jollymec extends eqLogic {
         $off->setSubType('other');
         $off->save();
 
-        // Status du Poêle Éteint ou Allumé
+        // Statut du Poêle Éteint ou Allumé
         /*
          0 OFF
          1-6 Allumage
@@ -474,6 +475,19 @@ class jollymec extends eqLogic {
         $status->setType('info');
         $status->setSubType('string');
         $status->save();
+
+        // Etat binaire du Poêle
+        $state = $this->getCmd(null, 'state');
+        if (!is_object($state)) {
+            $state = new jollymecCmd();
+            $state->setName(__('Etat', __FILE__));
+            $state->setGeneric_type('GENERIC_INFO');
+        }
+        $state->setLogicalId('state');
+        $state->setEqLogic_id($this->getId());
+        $state->setType('info');
+        $state->setSubType('binary');
+        $state->save();
 
         // Consigne
         $order = $this->getCmd(null, 'order');
@@ -548,6 +562,18 @@ class jollymec extends eqLogic {
         $setPower->setConfiguration('minValue', '0');
         $setPower->setConfiguration('maxValue', '5');
         $setPower->save();
+
+        // Paramètres
+        $setParameters = $this->getCmd(null, 'setParameters');
+        if (!is_object($setParameters)) {
+            $setParameters = new jollymecCmd();
+            $setParameters->setName(__('Ordre', __FILE__));
+        }
+        $setParameters->setEqLogic_id($this->getId());
+        $setParameters->setLogicalId('setParameters');
+        $setParameters->setType('action');
+        $setParameters->setSubType('message');
+        $setParameters->save();
     }
 
     public function preUpdate() {
@@ -620,6 +646,18 @@ class jollymecCmd extends cmd {
                     }
                 }
                 break;
+            case 'state':
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
+                if (isset($message->deviceStatus)) {
+                    if (in_array($message->deviceStatus, jollymec::STATE_OFF)) {
+                        $eqLogic->checkAndUpdateCmd('state', 0);
+                    }
+                    else {
+                        $eqLogic->checkAndUpdateCmd('state', 1);
+                    }
+                }
+                break;
             case 'order':
                 $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
                 $message = $response->message;
@@ -669,6 +707,12 @@ class jollymecCmd extends cmd {
                     else {
                         $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
                     }
+                    if (in_array($message->deviceStatus, jollymec::STATE_OFF)) {
+                        $eqLogic->checkAndUpdateCmd('state', 0);
+                    }
+                    else {
+                        $eqLogic->checkAndUpdateCmd('state', 1);
+                    }
                 }
                 break;
             case 'off':
@@ -684,6 +728,12 @@ class jollymecCmd extends cmd {
                     }
                     else {
                         $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
+                    }
+                    if (in_array($message->deviceStatus, jollymec::STATE_OFF)) {
+                        $eqLogic->checkAndUpdateCmd('state', 0);
+                    }
+                    else {
+                        $eqLogic->checkAndUpdateCmd('state', 1);
                     }
                 }
                 break;
@@ -703,6 +753,17 @@ class jollymecCmd extends cmd {
                     return;
                 }
                 jollymec::efesto_power(intval($_options['slider']), $eqLogic->getLogicalId());
+                $cmd = $eqLogic->getCmd(null, 'refresh');
+                if (!is_object($cmd)) {
+                    return;
+                }
+                $cmd->execCmd();
+                break;
+            case 'setParameters':
+                if (!isset($_options['message']) || $_options['message'] == '') {
+                    return;
+                }
+                jollymec::efesto_ajax('write-parameters-queue', $_options['message'], $eqLogic->getLogicalId());
                 $cmd = $eqLogic->getCmd(null, 'refresh');
                 if (!is_object($cmd)) {
                     return;

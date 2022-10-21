@@ -411,6 +411,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             <th>{{Nom}}</th>
                             <th>{{Type}}</th>
                             <th>{{Configuration}}</th>
+                            <th>{{Etat}}</th>
                             <th>{{Action}}</th>
                         </tr>
                     </thead>
