@@ -1,3 +1,6 @@
+# 11/01/2023
+- Mise à jour automatique de l'info binaire "Etat"
+
 # 21/10/2022
 - Ajout d'une info binaire "Etat" pour savoir si le poele est allumé ou pas
 - Ajout de la valeur des infos dans la liste des commandes pour Jeedom 4.3

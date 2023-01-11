@@ -616,6 +616,12 @@ class jollymecCmd extends cmd {
                     else {
                         $eqLogic->checkAndUpdateCmd('status', jollymec::STATUS_TRANSLATION[$message->deviceStatus]);
                     }
+                    if (in_array($message->deviceStatus, jollymec::STATE_OFF)) {
+                        $eqLogic->checkAndUpdateCmd('state', 0);
+                    }
+                    else {
+                        $eqLogic->checkAndUpdateCmd('state', 1);
+                    }
                 }
                 if (isset($message->lastSetAirTemperature)) {
                     $eqLogic->checkAndUpdateCmd('order', $message->lastSetAirTemperature);
