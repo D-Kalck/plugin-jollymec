@@ -29,7 +29,7 @@ class jollymec extends eqLogic {
     const REMOVE_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/remove/heater/{MAC_ADDRESS}/';
     const CHRONO_URL = 'http://jollymec.efesto.web2app.it/fr/heaters/action/chrono/heater/{MAC_ADDRESS}/';
     const AJAX_URL   = 'http://jollymec.efesto.web2app.it/fr/ajax/action/frontend/response/ajax/';
-    const STATUS_TRANSLATION = array('OFF', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'Allumage', 'ON', 'ON', 'Nettoyage Final', 'Stand-by', 'Stand-by', 'Alarme', 'Alarme');
+    const STATUS_TRANSLATION = array('OFF', 'Aspiration initiale', 'Prechaut. Resist.', 'Precharg. Pellet', 'Attente Flamme', 'Temps Flamme', 'Temps Allumage', 'Travail', 'ON', 'Nettoyage Final', 'Stand-by', 'Stand-by', 'Alarme', 'Alarme');
     const STATUS_ALARMS = array(12, 13, 101);
     const STATE_OFF = array(0);
     const REAL_POWER_TRANSLATION = array('ECO', 'ECO', 'SIL', 'P1', 'P2', 'P3', 'P4', 'P5');

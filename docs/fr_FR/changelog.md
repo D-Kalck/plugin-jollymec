@@ -1,3 +1,6 @@
+# 13/01/2023
+- Amélioration de la liste des statuts
+
 # 11/01/2023
 - Mise à jour automatique de l'info binaire "Etat"
 
