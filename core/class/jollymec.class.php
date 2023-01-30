@@ -404,6 +404,7 @@ class jollymec extends eqLogic {
         if (!is_object($smokeTemp)) {
             $smokeTemp = new jollymecCmd();
             $smokeTemp->setName(__('Fumées', __FILE__));
+            //$smokeTemp->setGeneric_type('TEMPERATURE');
             $smokeTemp->setTemplate('dashboard', 'line');
             $smokeTemp->setTemplate('mobile', 'line');
             $smokeTemp->setUnite('°C');
@@ -413,6 +414,38 @@ class jollymec extends eqLogic {
         $smokeTemp->setType('info');
         $smokeTemp->setSubType('numeric');
         $smokeTemp->save();
+
+        // Température du ballon
+        $pufferWaterTemp = $this->getCmd(null, 'pufferWaterTemp');
+        if (!is_object($pufferWaterTemp)) {
+            $pufferWaterTemp = new jollymecCmd();
+            $pufferWaterTemp->setName(__('Ballon', __FILE__));
+            //$pufferWaterTemp->setGeneric_type('TEMPERATURE');
+            $pufferWaterTemp->setTemplate('dashboard', 'badge');
+            $pufferWaterTemp->setTemplate('mobile', 'badge');
+            $pufferWaterTemp->setUnite('°C');
+        }
+        $pufferWaterTemp->setEqLogic_id($this->getId());
+        $pufferWaterTemp->setLogicalId('pufferWaterTemp');
+        $pufferWaterTemp->setType('info');
+        $pufferWaterTemp->setSubType('numeric');
+        $pufferWaterTemp->save();
+
+        // Température de l'eau
+        $waterTemp = $this->getCmd(null, 'waterTemp');
+        if (!is_object($waterTemp)) {
+            $waterTemp = new jollymecCmd();
+            $waterTemp->setName(__('Eau', __FILE__));
+            //$waterTemp->setGeneric_type('TEMPERATURE');
+            $waterTemp->setTemplate('dashboard', 'badge');
+            $waterTemp->setTemplate('mobile', 'badge');
+            $waterTemp->setUnite('°C');
+        }
+        $waterTemp->setEqLogic_id($this->getId());
+        $waterTemp->setLogicalId('waterTemp');
+        $waterTemp->setType('info');
+        $waterTemp->setSubType('numeric');
+        $waterTemp->save();
 
         // Température
         $airTemp = $this->getCmd(null, 'airTemp');
@@ -635,6 +668,12 @@ class jollymecCmd extends cmd {
                 if (isset($message->smokeTemperature)) {
                     $eqLogic->checkAndUpdateCmd('smokeTemp', $message->smokeTemperature);
                 }
+                if (isset($message->pufferWaterTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('pufferWaterTemp', $message->pufferWaterTemperature);
+                }
+                if (isset($message->waterTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('waterTemp', $message->waterTemperature);
+                }
                 if (isset($message->realPower)) {
                     $eqLogic->checkAndUpdateCmd('realPower', jollymec::REAL_POWER_TRANSLATION[$message->realPower]);
                 }
@@ -690,6 +729,20 @@ class jollymecCmd extends cmd {
                 $message = $response->message;
                 if (isset($message->smokeTemperature)) {
                     $eqLogic->checkAndUpdateCmd('smokeTemp', $message->smokeTemperature);
+                }
+                break;
+            case 'pufferWaterTemp':
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
+                if (isset($message->pufferWaterTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('pufferWaterTemp', $message->pufferWaterTemperature);
+                }
+                break;
+            case 'waterTemp':
+                $response = jollymec::efesto_get_state($eqLogic->getLogicalId());
+                $message = $response->message;
+                if (isset($message->waterTemperature)) {
+                    $eqLogic->checkAndUpdateCmd('waterTemp', $message->waterTemperature);
                 }
                 break;
             case 'realPower':

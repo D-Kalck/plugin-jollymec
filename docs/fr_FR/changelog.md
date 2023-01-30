@@ -1,3 +1,6 @@
+# 30/01/2023
+- Ajout des commandes infos pour les poêles Hydro
+
 # 13/01/2023
 - Amélioration de la liste des statuts
 
